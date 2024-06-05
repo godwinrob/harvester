@@ -1,0 +1,56 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: harvester-system
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: harvester
+  namespace: harvester-system
+
+spec:
+  selector:
+    matchLabels:
+      app: harvester
+
+  template:
+    metadata:
+      labels:
+        app: harvester
+
+    spec:
+      terminationGracePeriodSeconds: 60
+
+      #initContainers:
+      #  - name: init-migrate-seed
+      #    image: harvester-image
+      #    command: ['./admin']
+
+      containers:
+        - name: harvester
+          image: harvester-image
+
+          ports:
+            - name: harvester
+              containerPort: 3000
+
+          env:
+            - name: GOMAXPROCS
+              valueFrom:
+                resourceFieldRef:
+                  resource: limits.cpu
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: harvester-service
+  namespace: harvester-system
+
+spec:
+  selector:
+    app: harvester
