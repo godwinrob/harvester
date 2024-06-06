@@ -24,10 +24,10 @@ spec:
     spec:
       terminationGracePeriodSeconds: 60
 
-      #initContainers:
-      #  - name: init-migrate-seed
-      #    image: harvester-image
-      #    command: ['./admin']
+      initContainers:
+        - name: init-migrate-seed
+          image: harvester-image
+          command: ['./admin']
 
       containers:
         - name: harvester

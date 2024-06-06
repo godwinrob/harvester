@@ -7,7 +7,7 @@ ARG BUILD_REF
 COPY . /service
 
 # Build the service binary.
-WORKDIR /service/api/cmd/harvester
+WORKDIR /service/api/cmd/service/harvester
 RUN go build -ldflags "-X main.build=${BUILD_REF}"
 
 
@@ -17,7 +17,7 @@ ARG BUILD_DATE
 ARG BUILD_REF
 RUN addgroup -g 1000 -S harvester && \
     adduser -u 1000 -h /service -G harvester -S harvester
-COPY --from=build_harvester --chown=harvester:harvester /service/api/cmd/harvester/harvester /service/harvester
+COPY --from=build_harvester --chown=harvester:harvester /service/api/cmd/service/harvester/harvester /service/harvester
 WORKDIR /service
 USER harvester
 CMD ["./harvester"]
