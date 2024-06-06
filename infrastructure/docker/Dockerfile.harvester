@@ -22,6 +22,7 @@ WORKDIR /service
 USER harvester
 CMD ["./harvester"]
 
+
 LABEL org.opencontainers.image.created="${BUILD_DATE}" \
       org.opencontainers.image.title="harvester-api" \
       org.opencontainers.image.authors="Rob Godwin <rob@robgodwin.com>" \

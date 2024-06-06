@@ -1,0 +1,36 @@
+services:
+  harvester:
+    depends_on:
+      - postgres
+    build:
+      context: ../..
+      dockerfile: ./infrastructure/docker/Dockerfile.harvester
+    ports:
+      - "127.0.0.1:3000:3000"
+    env_file:
+      - .env
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 1
+    develop:
+      watch:
+        - action: rebuild
+          path: ../..
+          ignore:
+            - infrastructure/**
+            - terraform/**
+            - docs/**
+            - .git/**
+            - .github/**
+  postgres:
+    image: postgres:15.5
+    ports:
+      - "127.0.0.1:5432:5432"
+    restart:
+      always
+    environment:
+        POSTGRES_USER: postgres
+        POSTGRES_PASSWORD: postgres
+        POSTGRES_DB: postgres

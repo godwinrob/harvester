@@ -57,68 +57,15 @@ harvester:
 		.
 
 # ==============================================================================
-# Running from within k8s/kind
+# Running from within docker
 
-dev-up:
-	kind create cluster \
-		--image $(KIND) \
-		--name $(KIND_CLUSTER) \
-		--config infrastructure/k8s/dev/kind-config.yaml
+compose-up:
+	docker compose -f "./infrastructure/docker/compose.yaml" up
 
-	kubectl wait --timeout=120s --namespace=local-path-storage --for=condition=Available deployment/local-path-provisioner
-
-	kind load docker-image $(POSTGRES) --name $(KIND_CLUSTER)
-
-dev-load-db:
-	kind load docker-image $(POSTGRES) --name $(KIND_CLUSTER)
-
-dev-down:
-	kind delete cluster --name $(KIND_CLUSTER)
-
-dev-status-all:
-	kubectl get nodes -o wide
-	kubectl get svc -o wide
-	kubectl get pods -o wide --watch --all-namespaces
-
-dev-status:
-	watch -n 2 kubectl get pods -o wide --all-namespaces
-
-
-# ------------------------------------------------------------------------------
-
-dev-load:
-	kind load docker-image $(HARVESTER_IMAGE) --name $(KIND_CLUSTER)
-
-dev-apply:
-	kustomize build zarf/k8s/dev/database | kubectl apply -f -
-	kubectl rollout status --namespace=$(NAMESPACE) --watch --timeout=120s sts/database
-
-	kustomize build infrastructure/k8s/dev/harvester | kubectl apply -f -
-	kubectl wait pods --namespace=$(NAMESPACE) --selector app=$(HARVESTER_APP) --timeout=120s --for=condition=Ready
-
-dev-restart:
-	kubectl rollout restart deployment $(HARVESTER_APP) --namespace=$(NAMESPACE)
-
-dev-update: build dev-load dev-restart
-
-dev-update-apply: build dev-load dev-apply
-
-dev-logs:
-	kubectl logs --namespace=$(NAMESPACE) -l app=$(HARVESTER_APP) --all-containers=true -f --tail=100 --max-log-requests=6 | go run api/cmd/tooling/logfmt/main.go -service=$(HARVESTER_APP)
-
-# ------------------------------------------------------------------------------
-
-dev-logs-init:
-	kubectl logs --namespace=$(NAMESPACE) -l app=$(HARVESTER_APP) -f --tail=100 -c init-migrate-seed
-
-dev-describe-deployment:
-	kubectl describe deployment --namespace=$(NAMESPACE) $HARVESTER_APP)
-
-dev-describe-HARVESTER:
-	kubectl describe pod --namespace=$(NAMESPACE) -l app=$(HARVESTER_APP)
-
-pgcli:
-	pgcli postgresql://postgres:postgres@localhost
+compose-down:
+	docker compose -f "./infrastructure/docker/compose.yaml" down
+	docker image rm docker-harvester
+	docker volume prune -f
 
 # ==============================================================================
 # Modules support

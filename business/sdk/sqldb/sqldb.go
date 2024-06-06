@@ -5,6 +5,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"log"
 	"net/url"
 	"time"
 
@@ -64,8 +65,8 @@ func Open(cfg Config) (*sqlx.DB, error) {
 	if err != nil {
 		return nil, err
 	}
-	db.SetMaxIdleConns(cfg.MaxIdleConns)
-	db.SetMaxOpenConns(cfg.MaxOpenConns)
+
+	log.Println("Connected to database")
 
 	return db, nil
 }

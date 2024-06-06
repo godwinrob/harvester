@@ -7,6 +7,7 @@ require (
 	github.com/ardanlabs/darwin/v3 v3.3.1
 	github.com/ardanlabs/service v0.0.0-20240605215621-4bbfa1f3c803
 	github.com/jmoiron/sqlx v1.4.0
+	github.com/lib/pq v1.10.9
 )
 
 require (
@@ -17,7 +18,7 @@ require (
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.20.0 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20231201235250-de7065d80cb9 // indirect
-	github.com/jackc/pgx/v5 v5.6.0 // indirect
+	github.com/jackc/pgx/v5 v5.6.0
 	github.com/jackc/puddle/v2 v2.2.1 // indirect
 	go.opentelemetry.io/otel v1.27.0 // indirect
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.27.0 // indirect
