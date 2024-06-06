@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/godwinrob/harvester/business/sdk/sqldb"
 	"log/slog"
 	"net/http"
 	"os"
@@ -12,6 +11,8 @@ import (
 	"runtime"
 	"syscall"
 	"time"
+
+	"github.com/godwinrob/harvester/business/sdk/sqldb"
 
 	conf "github.com/ardanlabs/conf/v3"
 	"github.com/go-chi/chi/v5"
