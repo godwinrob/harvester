@@ -65,6 +65,7 @@ compose-up:
 compose-down:
 	docker compose -f "./infrastructure/docker/compose.yaml" down
 	docker image rm docker-harvester
+	docker image rm docker-admin
 	docker volume prune -f
 
 # ==============================================================================

@@ -3,23 +3,23 @@ package main
 import (
 	"context"
 	"fmt"
-	"log"
 	"log/slog"
 	"os"
 	"time"
 
 	"github.com/godwinrob/harvester/business/sdk/migrate"
 	"github.com/godwinrob/harvester/business/sdk/sqldb"
-
 	"github.com/jmoiron/sqlx"
 )
 
 func main() {
+
 	slog.Info("migrate", "status", "starting migration in 5 seconds")
-	time.Sleep(2 * time.Second)
+	time.Sleep(5 * time.Second)
 
 	if err := Migrate(); err != nil {
-		log.Fatalln(err)
+		slog.Error("error", err)
+		os.Exit(1)
 	}
 
 	slog.Info("migrate", "status", "migration completed")

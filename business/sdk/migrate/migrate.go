@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/ardanlabs/darwin/v3"
+	"log"
 
 	"github.com/ardanlabs/darwin/v3/dialects/postgres"
 	"github.com/ardanlabs/darwin/v3/drivers/generic"
@@ -35,6 +36,7 @@ func Migrate(ctx context.Context, db *sqlx.DB) error {
 		return fmt.Errorf("construct darwin driver: %w", err)
 	}
 
+	log.Printf("migrateDoc: %s", migrateDoc)
 	d := darwin.New(driver, darwin.ParseMigrations(migrateDoc))
 	return d.Migrate()
 }
