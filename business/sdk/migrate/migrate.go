@@ -11,7 +11,7 @@ import (
 
 	"github.com/ardanlabs/darwin/v3/dialects/postgres"
 	"github.com/ardanlabs/darwin/v3/drivers/generic"
-	"github.com/ardanlabs/service/business/sdk/sqldb"
+	"github.com/godwinrob/harvester/business/sdk/sqldb"
 	"github.com/jmoiron/sqlx"
 )
 

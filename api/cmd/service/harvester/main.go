@@ -12,31 +12,48 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/godwinrob/harvester/api/cmd/service/harvester/build/all"
 	"github.com/godwinrob/harvester/business/sdk/sqldb"
+	"github.com/godwinrob/harvester/foundation/web"
 
 	conf "github.com/ardanlabs/conf/v3"
-	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
-	_ "github.com/lib/pq"
+	"github.com/godwinrob/harvester/api/sdk/http/mux"
+	"github.com/godwinrob/harvester/foundation/logger"
 )
 
 var build = "develop"
 
 func main() {
+	var log *logger.Logger
+
+	events := logger.Events{
+		Error: func(ctx context.Context, r logger.Record) {
+			log.Info(ctx, "******* SEND ALERT *******")
+		},
+	}
+
+	traceIDFn := func(ctx context.Context) string {
+		return web.GetTraceID(ctx)
+	}
+
+	log = logger.NewWithEvents(os.Stdout, logger.LevelInfo, "SALES", traceIDFn, events)
+
+	// -------------------------------------------------------------------------
+
 	ctx := context.Background()
 
-	if err := run(ctx); err != nil {
-		slog.Error("startup", "msg", err)
+	if err := run(ctx, log); err != nil {
+		log.Error(ctx, "startup", "msg", err)
 		os.Exit(1)
 	}
 }
 
-func run(ctx context.Context) error {
+func run(ctx context.Context, log *logger.Logger) error {
 
 	// -------------------------------------------------------------------------
 	// GOMAXPROCS
 
-	slog.Info("startup", "GOMAXPROCS", runtime.GOMAXPROCS(0), "BUILD", build)
+	log.Info(ctx, "startup", "GOMAXPROCS", runtime.GOMAXPROCS(0), "BUILD", build)
 
 	// -------------------------------------------------------------------------
 	// Configuration
@@ -81,7 +98,7 @@ func run(ctx context.Context) error {
 	// -------------------------------------------------------------------------
 	// App Starting
 
-	slog.Info("starting service", "version", cfg.Build)
+	log.Info(ctx, "starting service", "version", cfg.Build)
 	defer slog.Info("shutdown complete")
 
 	slog.Info("startup", "config", fmt.Sprintf("%+v", cfg))
@@ -111,32 +128,27 @@ func run(ctx context.Context) error {
 		return fmt.Errorf("failed to ping db: %w", err)
 	}
 
-	//-------------------------------------------------------------------------
-	//Start API Service
+	// -------------------------------------------------------------------------
+	// Start API Service
 
-	slog.Info("startup", "status", "initializing V1 API support")
+	log.Info(ctx, "startup", "status", "initializing V1 API support")
 
 	shutdown := make(chan os.Signal, 1)
 	signal.Notify(shutdown, syscall.SIGINT, syscall.SIGTERM)
 
-	r := chi.NewRouter()
-	r.Use(middleware.Logger)
-	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("welcome"))
-	})
-
 	api := http.Server{
 		Addr:         cfg.Web.APIHost,
-		Handler:      r,
+		Handler:      mux.WebAPI(log, db, all.Routes()),
 		ReadTimeout:  cfg.Web.ReadTimeout,
 		WriteTimeout: cfg.Web.WriteTimeout,
 		IdleTimeout:  cfg.Web.IdleTimeout,
+		ErrorLog:     logger.NewStdLogger(log, logger.LevelError),
 	}
 
 	serverErrors := make(chan error, 1)
 
 	go func() {
-		slog.Info("startup", "status", "api router started")
+		log.Info(ctx, "startup", "status", "api router started", "host", api.Addr)
 
 		serverErrors <- api.ListenAndServe()
 	}()
