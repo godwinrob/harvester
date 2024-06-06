@@ -34,3 +34,11 @@ services:
         POSTGRES_USER: postgres
         POSTGRES_PASSWORD: postgres
         POSTGRES_DB: postgres
+  admin:
+    depends_on:
+      - postgres
+    build:
+      context: ../..
+      dockerfile: ./infrastructure/docker/Dockerfile.admin
+    restart:
+      no

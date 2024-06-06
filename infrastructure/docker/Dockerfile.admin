@@ -1,0 +1,23 @@
+# Build the Go Binary.
+FROM golang:1.22 as build_harvester
+ENV CGO_ENABLED 0
+ARG BUILD_REF
+
+# Copy the source code into the container.
+COPY . /service
+
+# Build the admin binary.
+WORKDIR /service/api/cmd/tooling/admin
+RUN go build -ldflags "-X main.build=${BUILD_REF}"
+
+
+# Run the Go Binary in Alpine.
+FROM alpine:3.19
+ARG BUILD_DATE
+ARG BUILD_REF
+RUN addgroup -g 1000 -S harvester && \
+    adduser -u 1000 -h /service -G harvester -S harvester
+COPY --from=build_harvester --chown=harvester:harvester /service/api/cmd/tooling/admin/admin /service/admin
+WORKDIR /service
+USER harvester
+CMD ["./admin"]

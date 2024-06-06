@@ -50,7 +50,7 @@ build: harvester
 
 harvester:
 	docker build \
-		-f infrastructure/docker/dockerfile.harvester \
+		-f infrastructure/docker/Dockerfile.harvester \
 		-t $(HARVESTER_IMAGE) \
 		--build-arg BUILD_REF=$(VERSION) \
 		--build-arg BUILD_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ") \

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"log/slog"
+	"os"
 	"time"
 
 	"github.com/godwinrob/harvester/business/sdk/migrate"
@@ -14,16 +15,23 @@ import (
 )
 
 func main() {
+	slog.Info("migrate", "status", "starting migration in 5 seconds")
+	time.Sleep(5 * time.Second)
+
 	if err := Migrate(); err != nil {
 		log.Fatalln(err)
 	}
+
+	slog.Info("migrate", "status", "migration completed")
+	os.Exit(0)
 }
 
 func Migrate() error {
+	slog.Info("migrate", "status", "beginning database migration")
 	cfg := sqldb.Config{
 		User:         "postgres",
 		Password:     "postgres",
-		Host:         "database-service.harvester-system.svc.cluster.local",
+		Host:         "postgres",
 		Name:         "postgres",
 		MaxIdleConns: 0,
 		MaxOpenConns: 0,
