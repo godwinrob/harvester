@@ -1,31 +1,31 @@
-// Package userapi maintains the web based api for user access.
-package userapi
+// Package galaxyapi maintains the web based api for resource access.
+package galaxyapi
 
 import (
 	"context"
-	"github.com/godwinrob/harvester/app/domain/userapp"
+	"github.com/godwinrob/harvester/app/domain/galaxyapp"
 	"github.com/godwinrob/harvester/app/sdk/errs"
 	"github.com/godwinrob/harvester/foundation/web"
 	"net/http"
 )
 
 type api struct {
-	userApp *userapp.App
+	galaxyApp *galaxyapp.App
 }
 
-func newAPI(userApp *userapp.App) *api {
+func newAPI(galaxyApp *galaxyapp.App) *api {
 	return &api{
-		userApp: userApp,
+		galaxyApp: galaxyApp,
 	}
 }
 
 func (api *api) create(ctx context.Context, r *http.Request) (web.Encoder, error) {
-	var app userapp.NewUser
+	var app galaxyApp.NewGalaxy
 	if err := web.Decode(r, &app); err != nil {
 		return nil, errs.New(errs.FailedPrecondition, err)
 	}
 
-	usr, err := api.userApp.Create(ctx, app)
+	usr, err := api.galaxyApp.Create(ctx, app)
 	if err != nil {
 		return nil, err
 	}
@@ -34,26 +34,12 @@ func (api *api) create(ctx context.Context, r *http.Request) (web.Encoder, error
 }
 
 func (api *api) update(ctx context.Context, r *http.Request) (web.Encoder, error) {
-	var app userapp.UpdateUser
+	var app galaxyApp.UpdateGalaxy
 	if err := web.Decode(r, &app); err != nil {
 		return nil, errs.New(errs.FailedPrecondition, err)
 	}
 
-	usr, err := api.userApp.Update(ctx, web.Param(r, "user_id"), app)
-	if err != nil {
-		return nil, err
-	}
-
-	return usr, nil
-}
-
-func (api *api) updateRole(ctx context.Context, r *http.Request) (web.Encoder, error) {
-	var app userapp.UpdateUserRole
-	if err := web.Decode(r, &app); err != nil {
-		return nil, errs.New(errs.FailedPrecondition, err)
-	}
-
-	usr, err := api.userApp.UpdateRole(ctx, web.Param(r, "user_id"), app)
+	usr, err := api.galaxyApp.Update(ctx, web.Param(r, "galaxy_id"), app)
 	if err != nil {
 		return nil, err
 	}
@@ -62,7 +48,7 @@ func (api *api) updateRole(ctx context.Context, r *http.Request) (web.Encoder, e
 }
 
 func (api *api) delete(ctx context.Context, r *http.Request) (web.Encoder, error) {
-	if err := api.userApp.Delete(ctx, web.Param(r, "user_id")); err != nil {
+	if err := api.galaxyApp.Delete(ctx, web.Param(r, "galaxy_id")); err != nil {
 		return nil, err
 	}
 
@@ -75,7 +61,7 @@ func (api *api) query(ctx context.Context, r *http.Request) (web.Encoder, error)
 		return nil, errs.New(errs.FailedPrecondition, err)
 	}
 
-	usr, err := api.userApp.Query(ctx, qp)
+	usr, err := api.galaxyApp.Query(ctx, qp)
 	if err != nil {
 		return nil, err
 	}
@@ -84,7 +70,16 @@ func (api *api) query(ctx context.Context, r *http.Request) (web.Encoder, error)
 }
 
 func (api *api) queryByID(ctx context.Context, r *http.Request) (web.Encoder, error) {
-	usr, err := api.userApp.QueryByID(ctx, web.Param(r, "user_id"))
+	usr, err := api.galaxyApp.QueryByID(ctx, web.Param(r, "galaxy_id"))
+	if err != nil {
+		return nil, err
+	}
+
+	return usr, nil
+}
+
+func (api *api) queryByName(ctx context.Context, r *http.Request) (web.Encoder, error) {
+	usr, err := api.galaxyApp.QueryByName(ctx, web.Param(r, "name"))
 	if err != nil {
 		return nil, err
 	}
