@@ -1,0 +1,88 @@
+{
+	"info": {
+		"_postman_id": "73e3fd03-a55b-4bb0-a7af-119834b8f8cf",
+		"name": "Harvester",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
+		"_exporter_id": "24062817"
+	},
+	"item": [
+		{
+			"name": "users",
+			"item": [
+				{
+					"name": "Create User",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"Rob Godwin\",\r\n    \"email\": \"rob@robgodwin.com\",\r\n    \"roles\": [\"ADMIN\"],\r\n    \"guild\": \"EXILE\",\r\n    \"password\": \"12345\",\r\n    \"passwordConfirm\": \"12345\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "localhost:3000/v1/users"
+					},
+					"response": []
+				},
+				{
+					"name": "Get User",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "localhost:3000/v1/users/42abd928-58f7-4d6e-a411-1ffbcf82c341"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "galaxies",
+			"item": [
+				{
+					"name": "Create Galaxy",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"A New Hope\",\r\n    \"ownerUserID\": \"4a0984e7-4a6f-47e5-a381-80c964f2e491\" \r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "localhost:3000/v1/galaxies"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "resources",
+			"item": [
+				{
+					"name": "Create Resource",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"test\",\r\n    \"galaxyID\": \"5d71e61b-fcc4-42df-a6ba-0cabc6c55384\",\r\n    \"addedUserID\": \"42abd928-58f7-4d6e-a411-1ffbcf82c341\",\r\n    \"resourceType\": \"big rock\",\r\n    \"oq\": 999\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "localhost:3000/v1/resources"
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
