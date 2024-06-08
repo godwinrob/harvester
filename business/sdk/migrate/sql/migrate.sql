@@ -25,8 +25,7 @@ CREATE TABLE public.galaxies (
     date_created timestamp DEFAULT now() NOT NULL,
     date_updated timestamp DEFAULT now() NOT NULL,
 
-    CONSTRAINT galaxies_pk PRIMARY KEY (galaxy_id),
-    CONSTRAINT galaxies_users_fk FOREIGN KEY (owner_user_id) REFERENCES public.users(user_id)
+    CONSTRAINT galaxies_pk PRIMARY KEY (galaxy_id)
 );
 
 -- Version: 1.03
@@ -55,10 +54,5 @@ CREATE TABLE public.resources (
     ut int2 DEFAULT 0 NOT NULL,
     er int2 DEFAULT 0 NOT NULL,
 
-
-    CONSTRAINT resources_pk PRIMARY KEY (resource_id),
-    CONSTRAINT resources_galaxies_fk FOREIGN KEY (galaxy_id) REFERENCES public.galaxies(galaxy_id),
-    CONSTRAINT resources_users_fk FOREIGN KEY (added_user_id) REFERENCES public.users(user_id),
-    CONSTRAINT resources_users_fk_1 FOREIGN KEY (unavailable_user_id) REFERENCES public.users(user_id),
-    CONSTRAINT resources_users_fk_2 FOREIGN KEY (verified_user_id) REFERENCES public.users(user_id)
+    CONSTRAINT resources_pk PRIMARY KEY (resource_id)
 );
