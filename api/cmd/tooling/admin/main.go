@@ -15,7 +15,7 @@ import (
 func main() {
 
 	slog.Info("migrate", "status", "starting migration in 5 seconds")
-	time.Sleep(5 * time.Second)
+	time.Sleep(8 * time.Second)
 
 	if err := Migrate(); err != nil {
 		slog.Error("error", err)

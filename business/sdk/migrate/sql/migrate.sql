@@ -21,7 +21,7 @@ CREATE TABLE public.galaxies (
     galaxy_id uuid NOT NULL,
     galaxy_name text NOT NULL,
     owner_user_id uuid NOT NULL,
-    enabled bool default true NULL,
+    enabled bool default true NOT NULL,
     date_created timestamp DEFAULT now() NOT NULL,
     date_updated timestamp DEFAULT now() NOT NULL,
 
@@ -33,16 +33,15 @@ CREATE TABLE public.galaxies (
 -- Description: Create table resources
 CREATE TABLE public.resources (
     resource_id uuid NOT NULL,
-    "name" text NOT NULL,
+    resource_name text NOT NULL,
     galaxy_id uuid NOT NULL,
     added_at timestamp DEFAULT now() NOT NULL,
     updated_at timestamp DEFAULT now() NOT NULL,
     added_user_id uuid NOT NULL,
     resource_type bpchar(63) NOT NULL,
-    unavailable timestamp NULL,
     unavailable_at timestamp NULL,
     unavailable_user_id uuid NULL,
-    verified timestamp NULL,
+    verified bool DEFAULT false NOT NULL,
     verified_user_id uuid NULL,
     cr int2 DEFAULT 0 NOT NULL,
     cd int2 DEFAULT 0 NOT NULL,

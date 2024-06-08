@@ -1,7 +1,13 @@
 package all
 
 import (
+	"github.com/godwinrob/harvester/api/domain/http/galaxyapi"
+	"github.com/godwinrob/harvester/api/domain/http/resourceapi"
 	"github.com/godwinrob/harvester/api/domain/http/userapi"
+	"github.com/godwinrob/harvester/business/domain/galaxybus"
+	"github.com/godwinrob/harvester/business/domain/galaxybus/stores/galaxydb"
+	"github.com/godwinrob/harvester/business/domain/resourcebus"
+	"github.com/godwinrob/harvester/business/domain/resourcebus/stores/resourcedb"
 	"github.com/godwinrob/harvester/business/domain/userbus"
 	"github.com/godwinrob/harvester/business/domain/userbus/stores/userdb"
 	"github.com/godwinrob/harvester/foundation/logger"
@@ -23,5 +29,15 @@ func (a add) Add(log *logger.Logger, db *sqlx.DB, app *web.App) {
 	userapi.Routes(app, userapi.Config{
 		Log:     log,
 		UserBus: userbus.NewBusiness(log, userdb.NewStore(log, db)),
+	})
+
+	galaxyapi.Routes(app, galaxyapi.Config{
+		Log:       log,
+		GalaxyBus: galaxybus.NewBusiness(log, galaxydb.NewStore(log, db)),
+	})
+
+	resourceapi.Routes(app, resourceapi.Config{
+		Log:         log,
+		ResourceBus: resourcebus.NewBusiness(log, resourcedb.NewStore(log, db)),
 	})
 }

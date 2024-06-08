@@ -1,56 +1,37 @@
-package userapp
+package resourceapp
 
 import (
-	"net/mail"
-	"time"
-
-	"github.com/godwinrob/harvester/business/domain/userbus"
+	"github.com/godwinrob/harvester/business/domain/resourcebus"
 	"github.com/godwinrob/harvester/foundation/validate"
 	"github.com/google/uuid"
 )
 
-func parseFilter(qp QueryParams) (userbus.QueryFilter, error) {
-	var filter userbus.QueryFilter
+func parseFilter(qp QueryParams) (resourcebus.QueryFilter, error) {
+	var filter resourcebus.QueryFilter
 
 	if qp.ID != "" {
 		id, err := uuid.Parse(qp.ID)
 		if err != nil {
-			return userbus.QueryFilter{}, validate.NewFieldsError("user_id", err)
+			return resourcebus.QueryFilter{}, validate.NewFieldsError("resource_id", err)
 		}
 		filter.ID = &id
 	}
 
 	if qp.Name != "" {
-		name, err := userbus.Names.Parse(qp.Name)
+		name, err := resourcebus.Names.Parse(qp.Name)
 		if err != nil {
-			return userbus.QueryFilter{}, validate.NewFieldsError("name", err)
+			return resourcebus.QueryFilter{}, validate.NewFieldsError("name", err)
 		}
-		filter.Name = &name
+		filter.ResourceName = &name
 	}
 
-	if qp.Email != "" {
-		addr, err := mail.ParseAddress(qp.Email)
-		if err != nil {
-			return userbus.QueryFilter{}, validate.NewFieldsError("email", err)
-		}
-		filter.Email = addr
-	}
-
-	if qp.StartCreatedDate != "" {
-		t, err := time.Parse(time.RFC3339, qp.StartCreatedDate)
-		if err != nil {
-			return userbus.QueryFilter{}, validate.NewFieldsError("start_created_date", err)
-		}
-		filter.StartCreatedDate = &t
-	}
-
-	if qp.EndCreatedDate != "" {
-		t, err := time.Parse(time.RFC3339, qp.EndCreatedDate)
-		if err != nil {
-			return userbus.QueryFilter{}, validate.NewFieldsError("end_created_date", err)
-		}
-		filter.EndCreatedDate = &t
-	}
+	//if qp.StartCreatedDate != "" {
+	//	t, err := time.Parse(time.RFC3339, qp.StartCreatedDate)
+	//	if err != nil {
+	//		return userbus.QueryFilter{}, validate.NewFieldsError("added_at", err)
+	//	}
+	//	filter.AddedAtDate = &t
+	//}
 
 	return filter, nil
 }

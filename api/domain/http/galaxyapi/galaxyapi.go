@@ -20,7 +20,7 @@ func newAPI(galaxyApp *galaxyapp.App) *api {
 }
 
 func (api *api) create(ctx context.Context, r *http.Request) (web.Encoder, error) {
-	var app galaxyApp.NewGalaxy
+	var app galaxyapp.NewGalaxy
 	if err := web.Decode(r, &app); err != nil {
 		return nil, errs.New(errs.FailedPrecondition, err)
 	}
@@ -34,7 +34,7 @@ func (api *api) create(ctx context.Context, r *http.Request) (web.Encoder, error
 }
 
 func (api *api) update(ctx context.Context, r *http.Request) (web.Encoder, error) {
-	var app galaxyApp.UpdateGalaxy
+	var app galaxyapp.UpdateGalaxy
 	if err := web.Decode(r, &app); err != nil {
 		return nil, errs.New(errs.FailedPrecondition, err)
 	}

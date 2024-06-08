@@ -1,162 +1,147 @@
-package userapp
+package resourceapp
 
 import (
 	"context"
 	"errors"
 	"github.com/godwinrob/harvester/app/sdk/errs"
 	"github.com/godwinrob/harvester/app/sdk/page"
-	"github.com/godwinrob/harvester/business/domain/userbus"
+	"github.com/godwinrob/harvester/business/domain/resourcebus"
 	"github.com/godwinrob/harvester/business/sdk/order"
 	"github.com/google/uuid"
 )
 
-// App manages the set of app layer api functions for the user domain.
+// App manages the set of app layer api functions for the resource domain.
 type App struct {
-	userBus *userbus.Business
+	resourceBus *resourcebus.Business
 }
 
-// NewApp constructs a user app API for use.
-func NewApp(userBus *userbus.Business) *App {
+// NewApp constructs a resource app API for use.
+func NewApp(resourceBus *resourcebus.Business) *App {
 	return &App{
-		userBus: userBus,
+		resourceBus: resourceBus,
 	}
 }
 
-// NewAppWithAuth constructs a user app API for use with auth support.
-func NewAppWithAuth(userBus *userbus.Business) *App {
+// NewAppWithAuth constructs a resource app API for use with auth support.
+func NewAppWithAuth(resourceBus *resourcebus.Business) *App {
 	return &App{
-		userBus: userBus,
+		resourceBus: resourceBus,
 	}
 }
 
-// Create adds a new user to the system.
-func (a *App) Create(ctx context.Context, app NewUser) (User, error) {
-	nc, err := toBusNewUser(app)
+// Create adds a new resource to the system.
+func (a *App) Create(ctx context.Context, app NewResource) (Resource, error) {
+	nc, err := toBusNewResource(app)
 	if err != nil {
-		return User{}, errs.New(errs.FailedPrecondition, err)
+		return Resource{}, errs.New(errs.FailedPrecondition, err)
 	}
 
-	usr, err := a.userBus.Create(ctx, nc)
+	usr, err := a.resourceBus.Create(ctx, nc)
 	if err != nil {
-		if errors.Is(err, userbus.ErrUniqueEmail) {
-			return User{}, errs.New(errs.Aborted, userbus.ErrUniqueEmail)
+		if errors.Is(err, resourcebus.ErrUniqueEmail) {
+			return Resource{}, errs.New(errs.Aborted, resourcebus.ErrUniqueEmail)
 		}
-		return User{}, errs.Newf(errs.Internal, "create: usr[%+v]: %s", usr, err)
+		return Resource{}, errs.Newf(errs.Internal, "create: usr[%+v]: %s", usr, err)
 	}
 
-	return toAppUser(usr), nil
+	return toAppResource(usr), nil
 }
 
-// Update updates an existing user.
-func (a *App) Update(ctx context.Context, userID string, app UpdateUser) (User, error) {
-	uu, err := toBusUpdateUser(app)
+// Update updates an existing resource.
+func (a *App) Update(ctx context.Context, resourceID string, app UpdateResource) (Resource, error) {
+	uu, err := toBusUpdateResource(app)
 	if err != nil {
-		return User{}, errs.New(errs.FailedPrecondition, err)
+		return Resource{}, errs.New(errs.FailedPrecondition, err)
 	}
 
-	id, err := uuid.Parse(userID)
+	id, err := uuid.Parse(resourceID)
 	if err != nil {
-		return User{}, errs.New(errs.FailedPrecondition, err)
+		return Resource{}, errs.New(errs.FailedPrecondition, err)
 	}
 
-	usr, err := a.userBus.QueryByID(ctx, id)
+	usr, err := a.resourceBus.QueryByID(ctx, id)
 	if err != nil {
-		return User{}, errs.Newf(errs.Internal, "user missing in context: %s", err)
+		return Resource{}, errs.Newf(errs.Internal, "resource missing in context: %s", err)
 	}
 
-	updUsr, err := a.userBus.Update(ctx, usr, uu)
+	updUsr, err := a.resourceBus.Update(ctx, usr, uu)
 	if err != nil {
-		return User{}, errs.Newf(errs.Internal, "update: userID[%s] uu[%+v]: %s", usr.ID, uu, err)
+		return Resource{}, errs.Newf(errs.Internal, "update: resourceID[%s] uu[%+v]: %s", usr.ID, uu, err)
 	}
 
-	return toAppUser(updUsr), nil
+	return toAppResource(updUsr), nil
 }
 
-// UpdateRole updates an existing user's role.
-func (a *App) UpdateRole(ctx context.Context, userID string, app UpdateUserRole) (User, error) {
-	uu, err := toBusUpdateUserRole(app)
-	if err != nil {
-		return User{}, errs.New(errs.FailedPrecondition, err)
-	}
-
-	id, err := uuid.Parse(userID)
-	if err != nil {
-		return User{}, errs.New(errs.FailedPrecondition, err)
-	}
-
-	usr, err := a.userBus.QueryByID(ctx, id)
-	if err != nil {
-		return User{}, errs.Newf(errs.Internal, "user missing in context: %s", err)
-	}
-
-	updUsr, err := a.userBus.Update(ctx, usr, uu)
-	if err != nil {
-		return User{}, errs.Newf(errs.Internal, "updaterole: userID[%s] uu[%+v]: %s", usr.ID, uu, err)
-	}
-
-	return toAppUser(updUsr), nil
-}
-
-// Delete removes a user from the system.
-func (a *App) Delete(ctx context.Context, userID string) error {
-	id, err := uuid.Parse(userID)
+// Delete removes a resource from the system.
+func (a *App) Delete(ctx context.Context, resourceID string) error {
+	id, err := uuid.Parse(resourceID)
 	if err != nil {
 		return errs.New(errs.FailedPrecondition, err)
 	}
 
-	usr, err := a.userBus.QueryByID(ctx, id)
+	usr, err := a.resourceBus.QueryByID(ctx, id)
 	if err != nil {
-		return errs.Newf(errs.Internal, "user missing in context: %s", err)
+		return errs.Newf(errs.Internal, "resource missing in context: %s", err)
 	}
 
-	if err := a.userBus.Delete(ctx, usr); err != nil {
-		return errs.Newf(errs.Internal, "delete: userID[%s]: %s", usr.ID, err)
+	if err := a.resourceBus.Delete(ctx, usr); err != nil {
+		return errs.Newf(errs.Internal, "delete: resourceID[%s]: %s", usr.ID, err)
 	}
 
 	return nil
 }
 
-// Query returns a list of users with paging.
-func (a *App) Query(ctx context.Context, qp QueryParams) (page.Document[User], error) {
+// Query returns a list of resources with paging.
+func (a *App) Query(ctx context.Context, qp QueryParams) (page.Document[Resource], error) {
 	pg, err := page.Parse(qp.Page, qp.Rows)
 	if err != nil {
-		return page.Document[User]{}, err
+		return page.Document[Resource]{}, err
 	}
 
 	filter, err := parseFilter(qp)
 	if err != nil {
-		return page.Document[User]{}, err
+		return page.Document[Resource]{}, err
 	}
 
 	orderBy, err := order.Parse(orderByFields, qp.OrderBy, defaultOrderBy)
 	if err != nil {
-		return page.Document[User]{}, err
+		return page.Document[Resource]{}, err
 	}
 
-	usrs, err := a.userBus.Query(ctx, filter, orderBy, pg.Number, pg.RowsPerPage)
+	usrs, err := a.resourceBus.Query(ctx, filter, orderBy, pg.Number, pg.RowsPerPage)
 	if err != nil {
-		return page.Document[User]{}, errs.Newf(errs.Internal, "query: %s", err)
+		return page.Document[Resource]{}, errs.Newf(errs.Internal, "query: %s", err)
 	}
 
-	total, err := a.userBus.Count(ctx, filter)
+	total, err := a.resourceBus.Count(ctx, filter)
 	if err != nil {
-		return page.Document[User]{}, errs.Newf(errs.Internal, "count: %s", err)
+		return page.Document[Resource]{}, errs.Newf(errs.Internal, "count: %s", err)
 	}
 
-	return page.NewDocument(toAppUsers(usrs), total, pg.Number, pg.RowsPerPage), nil
+	return page.NewDocument(toAppResources(usrs), total, pg.Number, pg.RowsPerPage), nil
 }
 
-// QueryByID returns a user by its Ia.
-func (a *App) QueryByID(ctx context.Context, userID string) (User, error) {
-	id, err := uuid.Parse(userID)
+// QueryByID returns a resource by its Ia.
+func (a *App) QueryByID(ctx context.Context, resourceID string) (Resource, error) {
+	id, err := uuid.Parse(resourceID)
 	if err != nil {
-		return User{}, errs.New(errs.FailedPrecondition, err)
+		return Resource{}, errs.New(errs.FailedPrecondition, err)
 	}
 
-	usr, err := a.userBus.QueryByID(ctx, id)
+	usr, err := a.resourceBus.QueryByID(ctx, id)
 	if err != nil {
-		return User{}, errs.Newf(errs.Internal, "user missing in context: %s", err)
+		return Resource{}, errs.Newf(errs.Internal, "resource missing in context: %s", err)
 	}
 
-	return toAppUser(usr), nil
+	return toAppResource(usr), nil
+}
+
+func (a *App) QueryByName(ctx context.Context, resourceName string) (Resource, error) {
+
+	usr, err := a.resourceBus.QueryByName(ctx, resourceName)
+	if err != nil {
+		return Resource{}, errs.Newf(errs.Internal, "resource missing in context: %s", err)
+	}
+
+	return toAppResource(usr), nil
 }

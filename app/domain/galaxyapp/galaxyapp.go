@@ -118,7 +118,7 @@ func (a *App) Query(ctx context.Context, qp QueryParams) (page.Document[Galaxy],
 		return page.Document[Galaxy]{}, errs.Newf(errs.Internal, "count: %s", err)
 	}
 
-	return page.NewDocument(toAppGalaxys(gals), total, pg.Number, pg.RowsPerPage), nil
+	return page.NewDocument(toAppGalaxies(gals), total, pg.Number, pg.RowsPerPage), nil
 }
 
 // QueryByID returns a galaxy by its Ia.
@@ -138,12 +138,8 @@ func (a *App) QueryByID(ctx context.Context, galaxyID string) (Galaxy, error) {
 
 // QueryByName returns a galaxy by its Ia.
 func (a *App) QueryByName(ctx context.Context, galaxyName string) (Galaxy, error) {
-	id, err := uuid.Parse(galaxyID)
-	if err != nil {
-		return Galaxy{}, errs.New(errs.FailedPrecondition, err)
-	}
 
-	gal, err := a.galaxyBus.QueryByName(ctx, name)
+	gal, err := a.galaxyBus.QueryByName(ctx, galaxyName)
 	if err != nil {
 		return Galaxy{}, errs.Newf(errs.Internal, "galaxy missing in context: %s", err)
 	}

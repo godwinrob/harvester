@@ -1,8 +1,6 @@
 package galaxyapp
 
 import (
-	"time"
-
 	"github.com/godwinrob/harvester/business/domain/galaxybus"
 	"github.com/godwinrob/harvester/foundation/validate"
 	"github.com/google/uuid"
@@ -27,21 +25,21 @@ func parseFilter(qp QueryParams) (galaxybus.QueryFilter, error) {
 		filter.Name = &name
 	}
 
-	if qp.StartCreatedDate != "" {
-		t, err := time.Parse(time.RFC3339, qp.StartCreatedDate)
-		if err != nil {
-			return galaxybus.QueryFilter{}, validate.NewFieldsError("start_created_date", err)
-		}
-		filter.StartCreatedDate = &t
-	}
-
-	if qp.EndCreatedDate != "" {
-		t, err := time.Parse(time.RFC3339, qp.EndCreatedDate)
-		if err != nil {
-			return galaxybus.QueryFilter{}, validate.NewFieldsError("end_created_date", err)
-		}
-		filter.EndCreatedDate = &t
-	}
+	//if qp.StartCreatedDate != "" {
+	//	t, err := time.Parse(time.RFC3339, qp.StartCreatedDate)
+	//	if err != nil {
+	//		return galaxybus.QueryFilter{}, validate.NewFieldsError("start_created_date", err)
+	//	}
+	//	filter.StartCreatedDate = &t
+	//}
+	//
+	//if qp.EndCreatedDate != "" {
+	//	t, err := time.Parse(time.RFC3339, qp.EndCreatedDate)
+	//	if err != nil {
+	//		return galaxybus.QueryFilter{}, validate.NewFieldsError("end_created_date", err)
+	//	}
+	//	filter.EndCreatedDate = &t
+	//}
 
 	return filter, nil
 }

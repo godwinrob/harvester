@@ -18,7 +18,6 @@ type QueryParams struct {
 	OrderBy     string
 	ID          string
 	Name        string
-	Email       string
 	DateCreated string
 }
 
@@ -134,9 +133,18 @@ func toBusUpdateGalaxy(app UpdateGalaxy) (galaxybus.UpdateGalaxy, error) {
 		name = &nm
 	}
 
+	var ownerID *uuid.UUID
+	if app.OwnerUserID != nil {
+		oi, err := uuid.Parse(*app.OwnerUserID)
+		if err != nil {
+			return galaxybus.UpdateGalaxy{}, fmt.Errorf("parse: %w", err)
+		}
+		ownerID = &oi
+	}
+
 	bus := galaxybus.UpdateGalaxy{
 		Name:        name,
-		OwnerUserID: app.OwnerUserID,
+		OwnerUserID: ownerID,
 		Enabled:     app.Enabled,
 	}
 

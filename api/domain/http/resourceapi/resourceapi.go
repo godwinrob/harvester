@@ -3,6 +3,7 @@ package resourceapi
 
 import (
 	"context"
+	"github.com/godwinrob/harvester/app/domain/resourceapp"
 	"github.com/godwinrob/harvester/app/sdk/errs"
 	"github.com/godwinrob/harvester/foundation/web"
 	"net/http"
@@ -14,12 +15,12 @@ type api struct {
 
 func newAPI(resourceApp *resourceapp.App) *api {
 	return &api{
-		resourceApp: resouceApp,
+		resourceApp: resourceApp,
 	}
 }
 
 func (api *api) create(ctx context.Context, r *http.Request) (web.Encoder, error) {
-	var app resourceApp.NewResource
+	var app resourceapp.NewResource
 	if err := web.Decode(r, &app); err != nil {
 		return nil, errs.New(errs.FailedPrecondition, err)
 	}
@@ -33,7 +34,7 @@ func (api *api) create(ctx context.Context, r *http.Request) (web.Encoder, error
 }
 
 func (api *api) update(ctx context.Context, r *http.Request) (web.Encoder, error) {
-	var app resourceApp.UpdateResource
+	var app resourceapp.UpdateResource
 	if err := web.Decode(r, &app); err != nil {
 		return nil, errs.New(errs.FailedPrecondition, err)
 	}

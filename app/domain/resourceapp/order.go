@@ -1,4 +1,4 @@
-package userapp
+package resourceapp
 
 import (
 	"github.com/godwinrob/harvester/business/domain/galaxybus"
@@ -8,8 +8,7 @@ import (
 var defaultOrderBy = order.NewBy("date_created", order.ASC)
 
 var orderByFields = map[string]string{
-	"galaxy_id":    galaxybus.OrderByID,
-	"galaxy_name":  galaxybus.OrderByName,
-	"date_created": galaxybus.OrderByEmail,
-	"enabled":      galaxybus.OrderByEnabled,
+	"galaxy_id":   galaxybus.OrderByID,
+	"galaxy_name": galaxybus.OrderByName,
+	"enabled":     galaxybus.OrderByEnabled,
 }

@@ -1,70 +1,90 @@
-package userapp
+package resourceapp
 
 import (
 	"encoding/json"
 	"fmt"
-	"net/mail"
+	"github.com/godwinrob/harvester/business/domain/resourcebus"
+	"github.com/google/uuid"
 	"time"
 
 	"github.com/godwinrob/harvester/app/sdk/errs"
-	"github.com/godwinrob/harvester/business/domain/userbus"
 	"github.com/godwinrob/harvester/foundation/validate"
 )
 
 // QueryParams represents the set of possible query strings.
 type QueryParams struct {
-	Page             string
-	Rows             string
-	OrderBy          string
-	ID               string
-	Name             string
-	Email            string
-	StartCreatedDate string
-	EndCreatedDate   string
+	Page        string
+	Rows        string
+	OrderBy     string
+	ID          string
+	Name        string
+	AddedAtDate string
 }
 
-// User represents information about an individual user.
-type User struct {
-	ID           string   `json:"id"`
-	Name         string   `json:"name"`
-	Email        string   `json:"email"`
-	Roles        []string `json:"roles"`
-	PasswordHash []byte   `json:"-"`
-	Guild        string   `json:"guild"`
-	Enabled      bool     `json:"enabled"`
-	DateCreated  string   `json:"dateCreated"`
-	DateUpdated  string   `json:"dateUpdated"`
+// Resource represents information about an individual resource.
+type Resource struct {
+	ID                string `json:"id"`
+	Name              string `json:"name"`
+	GalaxyID          string `json:"galaxyID"`
+	AddedAtDate       string `json:"addedAtDate"`
+	UpdatedAtDate     string `json:"updatedAtDate"`
+	AddedUserID       string `json:"addedUserID"`
+	ResourceType      string `json:"resourceType"`
+	UnavailableAt     string `json:"unavailableAt"`
+	UnavailableUserID string `json:"unavailableUserID"`
+	Verified          bool   `json:"verified"`
+	VerifiedUserID    string `json:"verifiedUserID"`
+	CR                int16  `json:"cr"`
+	CD                int16  `json:"cd"`
+	DR                int16  `json:"dr"`
+	FL                int16  `json:"fl"`
+	HR                int16  `json:"hr"`
+	MA                int16  `json:"ma"`
+	PE                int16  `json:"pe"`
+	OQ                int16  `json:"oq"`
+	SR                int16  `json:"sr"`
+	UT                int16  `json:"ut"`
+	ER                int16  `json:"er"`
 }
 
 // Encode implments the encoder interface.
-func (app User) Encode() ([]byte, string, error) {
+func (app Resource) Encode() ([]byte, string, error) {
 	data, err := json.Marshal(app)
 	return data, "application/json", err
 }
 
-func toAppUser(bus userbus.User) User {
-	roles := make([]string, len(bus.Roles))
-	for i, role := range bus.Roles {
-		roles[i] = role.String()
-	}
+func toAppResource(bus resourcebus.Resource) Resource {
 
-	return User{
-		ID:           bus.ID.String(),
-		Name:         bus.Name.String(),
-		Email:        bus.Email.Address,
-		Roles:        roles,
-		PasswordHash: bus.PasswordHash,
-		Guild:        bus.Guild,
-		Enabled:      bus.Enabled,
-		DateCreated:  bus.DateCreated.Format(time.RFC3339),
-		DateUpdated:  bus.DateUpdated.Format(time.RFC3339),
+	return Resource{
+		ID:                bus.ID.String(),
+		Name:              bus.Name.String(),
+		GalaxyID:          bus.GalaxyID.String(),
+		AddedAtDate:       bus.AddedAtDate.Format(time.RFC3339),
+		UpdatedAtDate:     bus.UpdatedAtDate.Format(time.RFC3339),
+		AddedUserID:       bus.AddedUserID.String(),
+		ResourceType:      bus.ResourceType,
+		UnavailableAt:     bus.UnavailableAt.Format(time.RFC3339),
+		UnavailableUserID: bus.UnavailableUserID.String(),
+		Verified:          bus.Verified,
+		VerifiedUserID:    bus.VerifiedUserID.String(),
+		CR:                int16(bus.CR),
+		CD:                int16(bus.CD),
+		DR:                int16(bus.DR),
+		FL:                int16(bus.FL),
+		HR:                int16(bus.HR),
+		MA:                int16(bus.MA),
+		PE:                int16(bus.PE),
+		OQ:                int16(bus.OQ),
+		SR:                int16(bus.SR),
+		UT:                int16(bus.UT),
+		ER:                int16(bus.ER),
 	}
 }
 
-func toAppUsers(users []userbus.User) []User {
-	app := make([]User, len(users))
-	for i, usr := range users {
-		app[i] = toAppUser(usr)
+func toAppResources(resources []resourcebus.Resource) []Resource {
+	app := make([]Resource, len(resources))
+	for i, res := range resources {
+		app[i] = toAppResource(res)
 	}
 
 	return app
@@ -72,23 +92,32 @@ func toAppUsers(users []userbus.User) []User {
 
 // =============================================================================
 
-// NewUser defines the data needed to add a new user.
-type NewUser struct {
-	Name            string   `json:"name" validate:"required"`
-	Email           string   `json:"email" validate:"required,email"`
-	Roles           []string `json:"roles" validate:"required"`
-	Guild           string   `json:"guild"`
-	Password        string   `json:"password" validate:"required"`
-	PasswordConfirm string   `json:"passwordConfirm" validate:"eqfield=Password"`
+// NewResource defines the data needed to add a new resource.
+type NewResource struct {
+	Name         string `json:"name" validate:"required"`
+	GalaxyID     string `json:"galaxyID" validate:"required"`
+	AddedUserID  string `json:"addedUserID" validate:"required"`
+	ResourceType string `json:"resourceType" validate:"required"`
+	CR           int16  `json:"cr"`
+	CD           int16  `json:"cd"`
+	DR           int16  `json:"dr"`
+	FL           int16  `json:"fl"`
+	HR           int16  `json:"hr"`
+	MA           int16  `json:"ma"`
+	PE           int16  `json:"pe"`
+	OQ           int16  `json:"oq" validate:"required"`
+	SR           int16  `json:"sr"`
+	UT           int16  `json:"ut"`
+	ER           int16  `json:"er"`
 }
 
 // Decode implments the decoder interface.
-func (app *NewUser) Decode(data []byte) error {
+func (app *NewResource) Decode(data []byte) error {
 	return json.Unmarshal(data, &app)
 }
 
 // Validate checks the data in the model is considered clean.
-func (app NewUser) Validate() error {
+func (app NewResource) Validate() error {
 	if err := validate.Check(app); err != nil {
 		return errs.Newf(errs.FailedPrecondition, "validate: %s", err)
 	}
@@ -96,32 +125,39 @@ func (app NewUser) Validate() error {
 	return nil
 }
 
-func toBusNewUser(app NewUser) (userbus.NewUser, error) {
-	roles := make([]userbus.Role, len(app.Roles))
-	for i, roleStr := range app.Roles {
-		role, err := userbus.Roles.Parse(roleStr)
-		if err != nil {
-			return userbus.NewUser{}, fmt.Errorf("parse: %w", err)
-		}
-		roles[i] = role
-	}
+func toBusNewResource(app NewResource) (resourcebus.NewResource, error) {
 
-	addr, err := mail.ParseAddress(app.Email)
+	name, err := resourcebus.Names.Parse(app.Name)
 	if err != nil {
-		return userbus.NewUser{}, fmt.Errorf("parse: %w", err)
+		return resourcebus.NewResource{}, fmt.Errorf("parse: %w", err)
 	}
 
-	name, err := userbus.Names.Parse(app.Name)
+	galaxyID, err := uuid.Parse(app.GalaxyID)
 	if err != nil {
-		return userbus.NewUser{}, fmt.Errorf("parse: %w", err)
+		return resourcebus.NewResource{}, fmt.Errorf("parse: %w", err)
 	}
 
-	bus := userbus.NewUser{
-		Name:     name,
-		Email:    *addr,
-		Roles:    roles,
-		Guild:    app.Guild,
-		Password: app.Password,
+	addedUserID, err := uuid.Parse(app.AddedUserID)
+	if err != nil {
+		return resourcebus.NewResource{}, fmt.Errorf("parse: %w", err)
+	}
+
+	bus := resourcebus.NewResource{
+		Name:         name,
+		GalaxyID:     galaxyID,
+		AddedUserID:  addedUserID,
+		ResourceType: app.ResourceType,
+		CR:           app.CR,
+		CD:           app.CD,
+		DR:           app.DR,
+		FL:           app.FL,
+		HR:           app.HR,
+		MA:           app.MA,
+		PE:           app.PE,
+		OQ:           app.OQ,
+		SR:           app.SR,
+		UT:           app.UT,
+		ER:           app.ER,
 	}
 
 	return bus, nil
@@ -129,18 +165,36 @@ func toBusNewUser(app NewUser) (userbus.NewUser, error) {
 
 // =============================================================================
 
-// UpdateUserRole defines the data needed to update a user role.
-type UpdateUserRole struct {
-	Roles []string `json:"roles" validate:"required"`
+// UpdateResource defines the data needed to update a resource.
+type UpdateResource struct {
+	Name              *string    `json:"name"`
+	GalaxyID          *string    `json:"galaxyID"`
+	AddedUserID       *string    `json:"addedUserID"`
+	ResourceType      *string    `json:"resourceType"`
+	UnavailableAt     *time.Time `json:"unavailableAt"`
+	UnavailableUserID *string    `json:"unavailableUserID"`
+	Verified          *bool      `json:"verified"`
+	VerifiedUserID    *string    `json:"verifiedUserID"`
+	CR                *int16     `json:"cr"`
+	CD                *int16     `json:"cd"`
+	DR                *int16     `json:"dr"`
+	FL                *int16     `json:"fl"`
+	HR                *int16     `json:"hr"`
+	MA                *int16     `json:"ma"`
+	PE                *int16     `json:"pe"`
+	OQ                *int16     `json:"oq"`
+	SR                *int16     `json:"sr"`
+	UT                *int16     `json:"ut"`
+	ER                *int16     `json:"er"`
 }
 
 // Decode implments the decoder interface.
-func (app *UpdateUserRole) Decode(data []byte) error {
+func (app *UpdateResource) Decode(data []byte) error {
 	return json.Unmarshal(data, &app)
 }
 
 // Validate checks the data in the model is considered clean.
-func (app UpdateUserRole) Validate() error {
+func (app UpdateResource) Validate() error {
 	if err := validate.Check(app); err != nil {
 		return errs.Newf(errs.FailedPrecondition, "validate: %s", err)
 	}
@@ -148,77 +202,52 @@ func (app UpdateUserRole) Validate() error {
 	return nil
 }
 
-func toBusUpdateUserRole(app UpdateUserRole) (userbus.UpdateUser, error) {
-	var roles []userbus.Role
-	if app.Roles != nil {
-		roles = make([]userbus.Role, len(app.Roles))
-		for i, roleStr := range app.Roles {
-			role, err := userbus.Roles.Parse(roleStr)
-			if err != nil {
-				return userbus.UpdateUser{}, fmt.Errorf("parse: %w", err)
-			}
-			roles[i] = role
-		}
-	}
+func toBusUpdateResource(app UpdateResource) (resourcebus.UpdateResource, error) {
 
-	bus := userbus.UpdateUser{
-		Roles: roles,
-	}
-
-	return bus, nil
-}
-
-// =============================================================================
-
-// UpdateUser defines the data needed to update a user.
-type UpdateUser struct {
-	Name            *string `json:"name"`
-	Email           *string `json:"email" validate:"omitempty,email"`
-	Guild           *string `json:"guild"`
-	Password        *string `json:"password"`
-	PasswordConfirm *string `json:"passwordConfirm" validate:"omitempty,eqfield=Password"`
-	Enabled         *bool   `json:"enabled"`
-}
-
-// Decode implments the decoder interface.
-func (app *UpdateUser) Decode(data []byte) error {
-	return json.Unmarshal(data, &app)
-}
-
-// Validate checks the data in the model is considered clean.
-func (app UpdateUser) Validate() error {
-	if err := validate.Check(app); err != nil {
-		return errs.Newf(errs.FailedPrecondition, "validate: %s", err)
-	}
-
-	return nil
-}
-
-func toBusUpdateUser(app UpdateUser) (userbus.UpdateUser, error) {
-	var addr *mail.Address
-	if app.Email != nil {
-		var err error
-		addr, err = mail.ParseAddress(*app.Email)
-		if err != nil {
-			return userbus.UpdateUser{}, fmt.Errorf("parse: %w", err)
-		}
-	}
-
-	var name *userbus.Name
+	var name *resourcebus.Name
 	if app.Name != nil {
-		nm, err := userbus.Names.Parse(*app.Name)
+		nm, err := resourcebus.Names.Parse(*app.Name)
 		if err != nil {
-			return userbus.UpdateUser{}, fmt.Errorf("parse: %w", err)
+			return resourcebus.UpdateResource{}, fmt.Errorf("parse: %w", err)
 		}
 		name = &nm
 	}
 
-	bus := userbus.UpdateUser{
-		Name:     name,
-		Email:    addr,
-		Guild:    app.Guild,
-		Password: app.Password,
-		Enabled:  app.Enabled,
+	var unavailableUserID *uuid.UUID
+	if app.UnavailableUserID != nil {
+		id, err := uuid.Parse(*app.UnavailableUserID)
+		if err != nil {
+			return resourcebus.UpdateResource{}, fmt.Errorf("parse: %w", err)
+		}
+		unavailableUserID = &id
+	}
+
+	var verifiedUserID *uuid.UUID
+	if app.VerifiedUserID != nil {
+		id, err := uuid.Parse(*app.VerifiedUserID)
+		if err != nil {
+			return resourcebus.UpdateResource{}, fmt.Errorf("parse: %w", err)
+		}
+		verifiedUserID = &id
+	}
+
+	bus := resourcebus.UpdateResource{
+		Name:              name,
+		UnavailableAt:     app.UnavailableAt,
+		UnavailableUserID: unavailableUserID,
+		Verified:          app.Verified,
+		VerifiedUserID:    verifiedUserID,
+		CR:                app.CR,
+		CD:                app.CD,
+		DR:                app.DR,
+		FL:                app.FL,
+		HR:                app.HR,
+		MA:                app.MA,
+		PE:                app.PE,
+		OQ:                app.OQ,
+		SR:                app.SR,
+		UT:                app.UT,
+		ER:                app.ER,
 	}
 
 	return bus, nil

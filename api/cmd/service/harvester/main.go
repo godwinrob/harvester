@@ -108,7 +108,7 @@ func run(ctx context.Context, log *logger.Logger) error {
 
 	slog.Info("startup", "status", "initializing database support", "hostport", cfg.DB.Host)
 
-	time.Sleep(3 * time.Second)
+	time.Sleep(10 * time.Second)
 
 	db, err := sqldb.Open(sqldb.Config{
 		User:         cfg.DB.User,
