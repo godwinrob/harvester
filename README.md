@@ -22,6 +22,8 @@ Prerequisites:
 
 When running locally host is available at `localhost:3000`
 
+Postman collection included in root directory with examples
+
 Users:
 
 | Method | Endpoint           |
