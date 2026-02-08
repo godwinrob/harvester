@@ -9,3 +9,6 @@ images:
   - name: harvester-image
     newName: localhost/harvester/harvester
     newTag: 0.0.1
+  - name: admin-image
+    newName: localhost/harvester/admin
+    newTag: 0.0.1

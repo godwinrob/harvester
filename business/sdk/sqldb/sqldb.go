@@ -30,6 +30,139 @@ var (
 	ErrUndefinedTable    = errors.New("undefined table")
 )
 
+// Transactor interface for types that can begin transactions.
+type Transactor interface {
+	Beginx() (*sqlx.Tx, error)
+}
+
+// WithTransaction executes a function within a database transaction.
+// If the function returns an error, the transaction is rolled back.
+// If the function succeeds, the transaction is committed.
+func WithTransaction(db Transactor, fn func(tx *sqlx.Tx) error) error {
+	tx, err := db.Beginx()
+	if err != nil {
+		return fmt.Errorf("begin transaction: %w", err)
+	}
+
+	if err := fn(tx); err != nil {
+		if rbErr := tx.Rollback(); rbErr != nil {
+			return fmt.Errorf("rollback failed: %v, original error: %w", rbErr, err)
+		}
+		return err
+	}
+
+	if err := tx.Commit(); err != nil {
+		return fmt.Errorf("commit transaction: %w", err)
+	}
+
+	return nil
+}
+
+// NamedExecContextWithTx is a helper function to execute a CUD operation within
+// a transaction with logging and tracing where field replacement is necessary.
+func NamedExecContextWithTx(ctx context.Context, log *logger.Logger, tx *sqlx.Tx, query string, data any) (err error) {
+	q := queryString(query, data)
+
+	defer func() {
+		if err != nil {
+			switch data.(type) {
+			case struct{}:
+				log.Infoc(ctx, 6, "database.NamedExecContextWithTx", "query", q, "ERROR", err)
+			default:
+				log.Infoc(ctx, 5, "database.NamedExecContextWithTx", "query", q, "ERROR", err)
+			}
+		}
+	}()
+
+	if _, err := tx.NamedExecContext(ctx, query, data); err != nil {
+		if pqerr, ok := err.(*pgconn.PgError); ok {
+			switch pqerr.Code {
+			case undefinedTable:
+				return ErrUndefinedTable
+			case uniqueViolation:
+				return ErrDBDuplicatedEntry
+			}
+		}
+		return err
+	}
+
+	return nil
+}
+
+// NamedExecContextUsingIn is a helper function to execute a CUD operation with
+// IN clause support, logging and tracing where field replacement is necessary.
+func NamedExecContextUsingIn(ctx context.Context, log *logger.Logger, db sqlx.ExtContext, query string, data any) (err error) {
+	q := queryString(query, data)
+
+	defer func() {
+		if err != nil {
+			log.Infoc(ctx, 5, "database.NamedExecContextUsingIn", "query", q, "ERROR", err)
+		}
+	}()
+
+	named, args, err := sqlx.Named(query, data)
+	if err != nil {
+		return err
+	}
+
+	query, args, err = sqlx.In(named, args...)
+	if err != nil {
+		return err
+	}
+
+	query = db.Rebind(query)
+	if _, err := db.ExecContext(ctx, query, args...); err != nil {
+		if pqerr, ok := err.(*pgconn.PgError); ok {
+			switch pqerr.Code {
+			case undefinedTable:
+				return ErrUndefinedTable
+			case uniqueViolation:
+				return ErrDBDuplicatedEntry
+			}
+		}
+		return err
+	}
+
+	return nil
+}
+
+// NamedExecContextUsingInWithTx is a helper function to execute a CUD operation
+// within a transaction with IN clause support, logging and tracing.
+func NamedExecContextUsingInWithTx(ctx context.Context, log *logger.Logger, tx *sqlx.Tx, query string, data any) (err error) {
+	q := queryString(query, data)
+
+	defer func() {
+		if err != nil {
+			log.Infoc(ctx, 5, "database.NamedExecContextUsingInWithTx", "query", q, "ERROR", err)
+		}
+	}()
+
+	named, args, err := sqlx.Named(query, data)
+	if err != nil {
+		return err
+	}
+
+	query, args, err = sqlx.In(named, args...)
+	if err != nil {
+		return err
+	}
+
+	query = tx.Rebind(query)
+	if _, err := tx.ExecContext(ctx, query, args...); err != nil {
+		if pqerr, ok := err.(*pgconn.PgError); ok {
+			switch pqerr.Code {
+			case undefinedTable:
+				return ErrUndefinedTable
+			case uniqueViolation:
+				return ErrDBDuplicatedEntry
+			}
+		}
+		return err
+	}
+
+	return nil
+}
+
 // Config is the required properties to use the database.
 type Config struct {
 	User         string

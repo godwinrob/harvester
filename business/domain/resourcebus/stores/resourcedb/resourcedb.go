@@ -204,3 +204,98 @@ func (s *Store) QueryByName(ctx context.Context, name string) (resourcebus.Resou
 
 	return toBusResource(dbRe)
 }
+
+// BulkCreate inserts multiple resources into the database in a single transaction.
+func (s *Store) BulkCreate(ctx context.Context, resources []resourcebus.Resource) error {
+	db, ok := s.db.(*sqlx.DB)
+	if !ok {
+		return errors.New("bulk operations require *sqlx.DB")
+	}
+
+	return sqldb.WithTransaction(db, func(tx *sqlx.Tx) error {
+		const q = `
+		INSERT INTO resources
+			(resource_id, resource_name, galaxy_id, added_at, updated_at, added_user_id, resource_type, cr, cd, dr, fl, "hr", ma, pe, oq, sr, ut, er)
+		VALUES
+			(:resource_id, :resource_name, :galaxy_id, :added_at, :updated_at, :added_user_id, :resource_type, :cr, :cd, :dr, :fl, :hr, :ma, :pe, :oq, :sr, :ut, :er)`
+
+		for i, res := range resources {
+			if err := sqldb.NamedExecContextWithTx(ctx, s.log, tx, q, toDBResource(res)); err != nil {
+				if errors.Is(err, sqldb.ErrDBDuplicatedEntry) {
+					return fmt.Errorf("item[%d]: %w", i, resourcebus.ErrUniqueEmail)
+				}
+				return fmt.Errorf("item[%d]: %w", i, err)
+			}
+		}
+		return nil
+	})
+}
+
+// BulkUpdate updates multiple resources in the database in a single transaction.
+func (s *Store) BulkUpdate(ctx context.Context, resources []resourcebus.Resource) error {
+	db, ok := s.db.(*sqlx.DB)
+	if !ok {
+		return errors.New("bulk operations require *sqlx.DB")
+	}
+
+	return sqldb.WithTransaction(db, func(tx *sqlx.Tx) error {
+		const q = `
+		UPDATE
+			resources
+		SET
+			"resource_name" = :resource_name,
+			"unavailable_at" = :unavailable_at,
+			"unavailable_user_id" = :unavailable_user_id,
+			"verified" = :verified,
+			"verified_user_id" = :verified_user_id,
+			"cr" = :cr,
+			"cd" = :cd,
+			"dr" = :dr,
+			"fl" = :fl,
+			"hr" = :hr,
+			"ma" = :ma,
+			"pe" = :pe,
+			"oq" = :oq,
+			"sr" = :sr,
+			"ut" = :ut,
+			"er" = :er
+		WHERE
+			resource_id = :resource_id`
+
+		for i, res := range resources {
+			if err := sqldb.NamedExecContextWithTx(ctx, s.log, tx, q, toDBResource(res)); err != nil {
+				if errors.Is(err, sqldb.ErrDBDuplicatedEntry) {
+					return fmt.Errorf("item[%d]: %w", i, resourcebus.ErrUniqueEmail)
+				}
+				return fmt.Errorf("item[%d]: %w", i, err)
+			}
+		}
+		return nil
+	})
+}
+
+// BulkDelete removes multiple resources from the database in a single transaction.
+func (s *Store) BulkDelete(ctx context.Context, ids []uuid.UUID) error {
+	db, ok := s.db.(*sqlx.DB)
+	if !ok {
+		return errors.New("bulk operations require *sqlx.DB")
+	}
+
+	return sqldb.WithTransaction(db, func(tx *sqlx.Tx) error {
+		data := struct {
+			IDs []string `db:"ids"`
+		}{
+			IDs: make([]string, len(ids)),
+		}
+		for i, id := range ids {
+			data.IDs[i] = id.String()
+		}
+
+		const q = `DELETE FROM resources WHERE resource_id IN (:ids)`
+
+		if err := sqldb.NamedExecContextUsingInWithTx(ctx, s.log, tx, q, data); err != nil {
+			return fmt.Errorf("namedexeccontextusingintx: %w", err)
+		}
+		return nil
+	})
+}

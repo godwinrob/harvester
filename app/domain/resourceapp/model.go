@@ -252,3 +252,92 @@ func toBusUpdateResource(app UpdateResource) (resourcebus.UpdateResource, error)
 
 	return bus, nil
 }
+
+// =============================================================================
+
+// BulkNewResources defines the data needed to bulk create resources.
+type BulkNewResources struct {
+	Items []NewResource `json:"items" validate:"required,min=1,max=100,dive"`
+}
+
+// Decode implements the decoder interface.
+func (app *BulkNewResources) Decode(data []byte) error {
+	return json.Unmarshal(data, &app)
+}
+
+// Validate checks the data in the model is considered clean.
+func (app BulkNewResources) Validate() error {
+	if err := validate.Check(app); err != nil {
+		return errs.Newf(errs.FailedPrecondition, "validate: %s", err)
+	}
+
+	return nil
+}
+
+// BulkResources represents the result of a bulk resource operation.
+type BulkResources struct {
+	Items   []Resource `json:"items"`
+	Created int        `json:"created,omitempty"`
+	Updated int        `json:"updated,omitempty"`
+}
+
+// Encode implements the encoder interface.
+func (app BulkResources) Encode() ([]byte, string, error) {
+	data, err := json.Marshal(app)
+	return data, "application/json", err
+}
+
+// BulkUpdateResourceItem represents a single resource update in a bulk operation.
+type BulkUpdateResourceItem struct {
+	ID   string         `json:"id" validate:"required,uuid"`
+	Data UpdateResource `json:"data" validate:"required"`
+}
+
+// BulkUpdateResources defines the data needed to bulk update resources.
+type BulkUpdateResources struct {
+	Items []BulkUpdateResourceItem `json:"items" validate:"required,min=1,max=100,dive"`
+}
+
+// Decode implements the decoder interface.
+func (app *BulkUpdateResources) Decode(data []byte) error {
+	return json.Unmarshal(data, &app)
+}
+
+// Validate checks the data in the model is considered clean.
+func (app BulkUpdateResources) Validate() error {
+	if err := validate.Check(app); err != nil {
+		return errs.Newf(errs.FailedPrecondition, "validate: %s", err)
+	}
+
+	return nil
+}
+
+// BulkDeleteResources defines the data needed to bulk delete resources.
+type BulkDeleteResources struct {
+	IDs []string `json:"ids" validate:"required,min=1,max=100,dive,uuid"`
+}
+
+// Decode implements the decoder interface.
+func (app *BulkDeleteResources) Decode(data []byte) error {
+	return json.Unmarshal(data, &app)
+}
+
+// Validate checks the data in the model is considered clean.
+func (app BulkDeleteResources) Validate() error {
+	if err := validate.Check(app); err != nil {
+		return errs.Newf(errs.FailedPrecondition, "validate: %s", err)
+	}
+
+	return nil
+}
+
+// BulkDeleteResult represents the result of a bulk delete operation.
+type BulkDeleteResult struct {
+	Deleted int `json:"deleted"`
+}
+
+// Encode implements the encoder interface.
+func (app BulkDeleteResult) Encode() ([]byte, string, error) {
+	data, err := json.Marshal(app)
+	return data, "application/json", err
+}

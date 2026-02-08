@@ -223,3 +223,92 @@ func toBusUpdateUser(app UpdateUser) (userbus.UpdateUser, error) {
 
 	return bus, nil
 }
+
+// =============================================================================
+
+// BulkNewUsers defines the data needed to bulk create users.
+type BulkNewUsers struct {
+	Items []NewUser `json:"items" validate:"required,min=1,max=100,dive"`
+}
+
+// Decode implements the decoder interface.
+func (app *BulkNewUsers) Decode(data []byte) error {
+	return json.Unmarshal(data, &app)
+}
+
+// Validate checks the data in the model is considered clean.
+func (app BulkNewUsers) Validate() error {
+	if err := validate.Check(app); err != nil {
+		return errs.Newf(errs.FailedPrecondition, "validate: %s", err)
+	}
+
+	return nil
+}
+
+// BulkUsers represents the result of a bulk user operation.
+type BulkUsers struct {
+	Items   []User `json:"items"`
+	Created int    `json:"created,omitempty"`
+	Updated int    `json:"updated,omitempty"`
+}
+
+// Encode implements the encoder interface.
+func (app BulkUsers) Encode() ([]byte, string, error) {
+	data, err := json.Marshal(app)
+	return data, "application/json", err
+}
+
+// BulkUpdateUserItem represents a single user update in a bulk operation.
+type BulkUpdateUserItem struct {
+	ID   string     `json:"id" validate:"required,uuid"`
+	Data UpdateUser `json:"data" validate:"required"`
+}
+
+// BulkUpdateUsers defines the data needed to bulk update users.
+type BulkUpdateUsers struct {
+	Items []BulkUpdateUserItem `json:"items" validate:"required,min=1,max=100,dive"`
+}
+
+// Decode implements the decoder interface.
+func (app *BulkUpdateUsers) Decode(data []byte) error {
+	return json.Unmarshal(data, &app)
+}
+
+// Validate checks the data in the model is considered clean.
+func (app BulkUpdateUsers) Validate() error {
+	if err := validate.Check(app); err != nil {
+		return errs.Newf(errs.FailedPrecondition, "validate: %s", err)
+	}
+
+	return nil
+}
+
+// BulkDeleteUsers defines the data needed to bulk delete users.
+type BulkDeleteUsers struct {
+	IDs []string `json:"ids" validate:"required,min=1,max=100,dive,uuid"`
+}
+
+// Decode implements the decoder interface.
+func (app *BulkDeleteUsers) Decode(data []byte) error {
+	return json.Unmarshal(data, &app)
+}
+
+// Validate checks the data in the model is considered clean.
+func (app BulkDeleteUsers) Validate() error {
+	if err := validate.Check(app); err != nil {
+		return errs.Newf(errs.FailedPrecondition, "validate: %s", err)
+	}
+
+	return nil
+}
+
+// BulkDeleteResult represents the result of a bulk delete operation.
+type BulkDeleteResult struct {
+	Deleted int `json:"deleted"`
+}
+
+// Encode implements the encoder interface.
+func (app BulkDeleteResult) Encode() ([]byte, string, error) {
+	data, err := json.Marshal(app)
+	return data, "application/json", err
+}

@@ -100,3 +100,44 @@ func (err *Error) HTTPStatus() int {
 func (err *Error) Equal(err2 *Error) bool {
 	return err.Code == err2.Code && err.Message == err2.Message
 }
+
+// =============================================================================
+
+// BulkItemError represents a validation error for a specific item in a bulk operation.
+type BulkItemError struct {
+	Index int    `json:"index"`
+	Field string `json:"field"`
+	Error string `json:"error"`
+}
+
+// BulkValidationError represents a collection of validation errors from a bulk operation.
+type BulkValidationError struct {
+	Code    ErrCode         `json:"code"`
+	Message string          `json:"message"`
+	Errors  []BulkItemError `json:"errors"`
+}
+
+// NewBulkValidationError constructs a bulk validation error.
+func NewBulkValidationError(errors []BulkItemError) *BulkValidationError {
+	return &BulkValidationError{
+		Code:    FailedPrecondition,
+		Message: "validation failed",
+		Errors:  errors,
+	}
+}
+
+// Error implements the error interface.
+func (bve *BulkValidationError) Error() string {
+	return bve.Message
+}
+
+// Encode implements the encoder interface.
+func (bve *BulkValidationError) Encode() ([]byte, string, error) {
+	data, err := json.Marshal(bve)
+	return data, "application/json", err
+}
+
+// HTTPStatus implements the web package httpStatus interface.
+func (bve *BulkValidationError) HTTPStatus() int {
+	return httpStatus[bve.Code]
+}

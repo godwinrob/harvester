@@ -28,14 +28,15 @@ func main() {
 
 func Migrate() error {
 	slog.Info("migrate", "status", "beginning database migration")
+
 	cfg := sqldb.Config{
-		User:         "postgres",
-		Password:     "postgres",
-		Host:         "postgres",
-		Name:         "postgres",
+		User:         getEnv("HARVESTER_DB_USER", "postgres"),
+		Password:     getEnv("HARVESTER_DB_PASSWORD", "postgres"),
+		Host:         getEnv("HARVESTER_DB_HOST", "postgres"),
+		Name:         getEnv("HARVESTER_DB_NAME", "postgres"),
 		MaxIdleConns: 0,
 		MaxOpenConns: 0,
-		DisableTLS:   true,
+		DisableTLS:   getEnv("HARVESTER_DB_DISABLE_TLS", "true") == "true",
 	}
 
 	db, err := sqldb.Open(cfg)
@@ -65,4 +66,11 @@ func Migrate() error {
 
 	fmt.Println("seed data complete")
 	return nil
+}
+
+func getEnv(key, defaultValue string) string {
+	if value, exists := os.LookupEnv(key); exists {
+		return value
+	}
+	return defaultValue
 }

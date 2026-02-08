@@ -20,7 +20,10 @@ func Routes(app *web.App, cfg Config) {
 	app.HandleFunc("GET /v1/users", api.query)
 	app.HandleFunc("GET /v1/users/{user_id}", api.queryByID)
 	app.HandleFunc("POST /v1/users", api.create)
+	app.HandleFunc("POST /v1/users/bulk", api.bulkCreate)
 	app.HandleFunc("PUT /v1/users/role/{user_id}", api.updateRole)
+	app.HandleFunc("PUT /v1/users/bulk", api.bulkUpdate)
 	app.HandleFunc("PUT /v1/users/{user_id}", api.update)
+	app.HandleFunc("DELETE /v1/users/bulk", api.bulkDelete)
 	app.HandleFunc("DELETE /v1/users/{user_id}", api.delete)
 }

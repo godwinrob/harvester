@@ -150,3 +150,92 @@ func toBusUpdateGalaxy(app UpdateGalaxy) (galaxybus.UpdateGalaxy, error) {
 
 	return bus, nil
 }
+
+// =============================================================================
+
+// BulkNewGalaxies defines the data needed to bulk create galaxies.
+type BulkNewGalaxies struct {
+	Items []NewGalaxy `json:"items" validate:"required,min=1,max=100,dive"`
+}
+
+// Decode implements the decoder interface.
+func (app *BulkNewGalaxies) Decode(data []byte) error {
+	return json.Unmarshal(data, &app)
+}
+
+// Validate checks the data in the model is considered clean.
+func (app BulkNewGalaxies) Validate() error {
+	if err := validate.Check(app); err != nil {
+		return errs.Newf(errs.FailedPrecondition, "validate: %s", err)
+	}
+
+	return nil
+}
+
+// BulkGalaxies represents the result of a bulk galaxy operation.
+type BulkGalaxies struct {
+	Items   []Galaxy `json:"items"`
+	Created int      `json:"created,omitempty"`
+	Updated int      `json:"updated,omitempty"`
+}
+
+// Encode implements the encoder interface.
+func (app BulkGalaxies) Encode() ([]byte, string, error) {
+	data, err := json.Marshal(app)
+	return data, "application/json", err
+}
+
+// BulkUpdateGalaxyItem represents a single galaxy update in a bulk operation.
+type BulkUpdateGalaxyItem struct {
+	ID   string       `json:"id" validate:"required,uuid"`
+	Data UpdateGalaxy `json:"data" validate:"required"`
+}
+
+// BulkUpdateGalaxies defines the data needed to bulk update galaxies.
+type BulkUpdateGalaxies struct {
+	Items []BulkUpdateGalaxyItem `json:"items" validate:"required,min=1,max=100,dive"`
+}
+
+// Decode implements the decoder interface.
+func (app *BulkUpdateGalaxies) Decode(data []byte) error {
+	return json.Unmarshal(data, &app)
+}
+
+// Validate checks the data in the model is considered clean.
+func (app BulkUpdateGalaxies) Validate() error {
+	if err := validate.Check(app); err != nil {
+		return errs.Newf(errs.FailedPrecondition, "validate: %s", err)
+	}
+
+	return nil
+}
+
+// BulkDeleteGalaxies defines the data needed to bulk delete galaxies.
+type BulkDeleteGalaxies struct {
+	IDs []string `json:"ids" validate:"required,min=1,max=100,dive,uuid"`
+}
+
+// Decode implements the decoder interface.
+func (app *BulkDeleteGalaxies) Decode(data []byte) error {
+	return json.Unmarshal(data, &app)
+}
+
+// Validate checks the data in the model is considered clean.
+func (app BulkDeleteGalaxies) Validate() error {
+	if err := validate.Check(app); err != nil {
+		return errs.Newf(errs.FailedPrecondition, "validate: %s", err)
+	}
+
+	return nil
+}
+
+// BulkDeleteResult represents the result of a bulk delete operation.
+type BulkDeleteResult struct {
+	Deleted int `json:"deleted"`
+}
+
+// Encode implements the encoder interface.
+func (app BulkDeleteResult) Encode() ([]byte, string, error) {
+	data, err := json.Marshal(app)
+	return data, "application/json", err
+}

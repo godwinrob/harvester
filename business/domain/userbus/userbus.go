@@ -31,6 +31,9 @@ type Storer interface {
 	Count(ctx context.Context, filter QueryFilter) (int, error)
 	QueryByID(ctx context.Context, userID uuid.UUID) (User, error)
 	QueryByEmail(ctx context.Context, email mail.Address) (User, error)
+	BulkCreate(ctx context.Context, users []User) error
+	BulkUpdate(ctx context.Context, users []User) error
+	BulkDelete(ctx context.Context, ids []uuid.UUID) error
 }
 
 // Business manages the set of APIs for user access.
@@ -157,4 +160,88 @@ func (b *Business) QueryByEmail(ctx context.Context, email mail.Address) (User, 
 	}
 
 	return user, nil
+}
+
+// BulkCreate adds multiple new users to the system in a single transaction.
+func (b *Business) BulkCreate(ctx context.Context, newUsers []NewUser) ([]User, error) {
+	users := make([]User, len(newUsers))
+	now := time.Now()
+
+	for i, nu := range newUsers {
+		hash, err := bcrypt.GenerateFromPassword([]byte(nu.Password), bcrypt.DefaultCost)
+		if err != nil {
+			return nil, fmt.Errorf("generatefrompassword[%d]: %w", i, err)
+		}
+
+		users[i] = User{
+			ID:           uuid.New(),
+			Name:         nu.Name,
+			Email:        nu.Email,
+			PasswordHash: hash,
+			Roles:        nu.Roles,
+			Guild:        nu.Guild,
+			Enabled:      true,
+			DateCreated:  now,
+			DateUpdated:  now,
+		}
+	}
+
+	if err := b.storer.BulkCreate(ctx, users); err != nil {
+		return nil, fmt.Errorf("bulkcreate: %w", err)
+	}
+
+	return users, nil
+}
+
+// BulkUpdate modifies multiple users in a single transaction.
+func (b *Business) BulkUpdate(ctx context.Context, updates []UpdateUserWithID) ([]User, error) {
+	users := make([]User, len(updates))
+
+	for i, upd := range updates {
+		usr, err := b.storer.QueryByID(ctx, upd.ID)
+		if err != nil {
+			return nil, fmt.Errorf("querybyid[%d]: %w", i, err)
+		}
+
+		if upd.Data.Name != nil {
+			usr.Name = *upd.Data.Name
+		}
+		if upd.Data.Email != nil {
+			usr.Email = *upd.Data.Email
+		}
+		if upd.Data.Roles != nil {
+			usr.Roles = upd.Data.Roles
+		}
+		if upd.Data.Password != nil {
+			pw, err := bcrypt.GenerateFromPassword([]byte(*upd.Data.Password), bcrypt.DefaultCost)
+			if err != nil {
+				return nil, fmt.Errorf("generatefrompassword[%d]: %w", i, err)
+			}
+			usr.PasswordHash = pw
+		}
+		if upd.Data.Guild != nil {
+			usr.Guild = *upd.Data.Guild
+		}
+		if upd.Data.Enabled != nil {
+			usr.Enabled = *upd.Data.Enabled
+		}
+		usr.DateUpdated = time.Now()
+
+		users[i] = usr
+	}
+
+	if err := b.storer.BulkUpdate(ctx, users); err != nil {
+		return nil, fmt.Errorf("bulkupdate: %w", err)
+	}
+
+	return users, nil
+}
+
+// BulkDelete removes multiple users in a single transaction.
+func (b *Business) BulkDelete(ctx context.Context, ids []uuid.UUID) error {
+	if err := b.storer.BulkDelete(ctx, ids); err != nil {
+		return fmt.Errorf("bulkdelete: %w", err)
+	}
+
+	return nil
 }

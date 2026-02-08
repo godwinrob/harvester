@@ -197,3 +197,89 @@ func (s *Store) QueryByEmail(ctx context.Context, email mail.Address) (userbus.U
 
 	return toBusUser(dbUsr)
 }
+
+// BulkCreate inserts multiple users into the database in a single transaction.
+func (s *Store) BulkCreate(ctx context.Context, users []userbus.User) error {
+	db, ok := s.db.(*sqlx.DB)
+	if !ok {
+		return errors.New("bulk operations require *sqlx.DB")
+	}
+
+	return sqldb.WithTransaction(db, func(tx *sqlx.Tx) error {
+		const q = `
+		INSERT INTO users
+			(user_id, name, email, password_hash, roles, guild, enabled, date_created, date_updated)
+		VALUES
+			(:user_id, :name, :email, :password_hash, :roles, :guild, :enabled, :date_created, :date_updated)`
+
+		for i, usr := range users {
+			if err := sqldb.NamedExecContextWithTx(ctx, s.log, tx, q, toDBUser(usr)); err != nil {
+				if errors.Is(err, sqldb.ErrDBDuplicatedEntry) {
+					return fmt.Errorf("item[%d]: %w", i, userbus.ErrUniqueEmail)
+				}
+				return fmt.Errorf("item[%d]: %w", i, err)
+			}
+		}
+		return nil
+	})
+}
+
+// BulkUpdate updates multiple users in the database in a single transaction.
+func (s *Store) BulkUpdate(ctx context.Context, users []userbus.User) error {
+	db, ok := s.db.(*sqlx.DB)
+	if !ok {
+		return errors.New("bulk operations require *sqlx.DB")
+	}
+
+	return sqldb.WithTransaction(db, func(tx *sqlx.Tx) error {
+		const q = `
+		UPDATE
+			users
+		SET
+			"name" = :name,
+			"email" = :email,
+			"roles" = :roles,
+			"password_hash" = :password_hash,
+			"guild" = :guild,
+			"enabled" = :enabled,
+			"date_updated" = :date_updated
+		WHERE
+			user_id = :user_id`
+
+		for i, usr := range users {
+			if err := sqldb.NamedExecContextWithTx(ctx, s.log, tx, q, toDBUser(usr)); err != nil {
+				if errors.Is(err, sqldb.ErrDBDuplicatedEntry) {
+					return fmt.Errorf("item[%d]: %w", i, userbus.ErrUniqueEmail)
+				}
+				return fmt.Errorf("item[%d]: %w", i, err)
+			}
+		}
+		return nil
+	})
+}
+
+// BulkDelete removes multiple users from the database in a single transaction.
+func (s *Store) BulkDelete(ctx context.Context, ids []uuid.UUID) error {
+	db, ok := s.db.(*sqlx.DB)
+	if !ok {
+		return errors.New("bulk operations require *sqlx.DB")
+	}
+
+	return sqldb.WithTransaction(db, func(tx *sqlx.Tx) error {
+		data := struct {
+			IDs []string `db:"ids"`
+		}{
+			IDs: make([]string, len(ids)),
+		}
+		for i, id := range ids {
+			data.IDs[i] = id.String()
+		}
+
+		const q = `DELETE FROM users WHERE user_id IN (:ids)`
+
+		if err := sqldb.NamedExecContextUsingInWithTx(ctx, s.log, tx, q, data); err != nil {
+			return fmt.Errorf("namedexeccontextusingintx: %w", err)
+		}
+		return nil
+	})
+}

@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(tree:*)",
+      "Bash(go build:*)",
+      "Bash(go test:*)",
+      "Bash(chmod:*)",
+      "Bash(npm create vite@latest . -- --template react-ts)",
+      "Bash(npm install:*)",
+      "Bash(npm run build:*)",
+      "Bash(timeout 10 npm run dev)",
+      "Bash(docker build:*)",
+      "Bash(docker compose:*)"
+    ]
+  }
+}

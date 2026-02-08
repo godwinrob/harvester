@@ -3,6 +3,7 @@ package resourceapp
 import (
 	"context"
 	"errors"
+	"github.com/godwinrob/harvester/app/sdk/bulk"
 	"github.com/godwinrob/harvester/app/sdk/errs"
 	"github.com/godwinrob/harvester/app/sdk/page"
 	"github.com/godwinrob/harvester/business/domain/resourcebus"
@@ -144,4 +145,157 @@ func (a *App) QueryByName(ctx context.Context, resourceName string) (Resource, e
 	}
 
 	return toAppResource(usr), nil
+}
+
+// BulkCreate adds multiple new resources to the system.
+func (a *App) BulkCreate(ctx context.Context, app BulkNewResources) (BulkResources, error) {
+	if err := bulk.ValidateBatchSize(len(app.Items)); err != nil {
+		return BulkResources{}, errs.New(errs.FailedPrecondition, err)
+	}
+
+	// Validate and convert all items first (fail-fast)
+	var bulkErrors []errs.BulkItemError
+	newResources := make([]resourcebus.NewResource, 0, len(app.Items))
+
+	for i, item := range app.Items {
+		if err := item.Validate(); err != nil {
+			bulkErrors = append(bulkErrors, errs.BulkItemError{
+				Index: i,
+				Field: "item",
+				Error: err.Error(),
+			})
+			continue
+		}
+
+		nr, err := toBusNewResource(item)
+		if err != nil {
+			bulkErrors = append(bulkErrors, errs.BulkItemError{
+				Index: i,
+				Field: "item",
+				Error: err.Error(),
+			})
+			continue
+		}
+		newResources = append(newResources, nr)
+	}
+
+	if len(bulkErrors) > 0 {
+		return BulkResources{}, errs.NewBulkValidationError(bulkErrors)
+	}
+
+	resources, err := a.resourceBus.BulkCreate(ctx, newResources)
+	if err != nil {
+		if errors.Is(err, resourcebus.ErrUniqueEmail) {
+			return BulkResources{}, errs.New(errs.Aborted, resourcebus.ErrUniqueEmail)
+		}
+		return BulkResources{}, errs.Newf(errs.Internal, "bulkcreate: %s", err)
+	}
+
+	return BulkResources{
+		Items:   toAppResources(resources),
+		Created: len(resources),
+	}, nil
+}
+
+// BulkUpdate modifies multiple existing resources.
+func (a *App) BulkUpdate(ctx context.Context, app BulkUpdateResources) (BulkResources, error) {
+	if err := bulk.ValidateBatchSize(len(app.Items)); err != nil {
+		return BulkResources{}, errs.New(errs.FailedPrecondition, err)
+	}
+
+	// Validate and convert all items first (fail-fast)
+	var bulkErrors []errs.BulkItemError
+	updates := make([]resourcebus.UpdateResourceWithID, 0, len(app.Items))
+
+	for i, item := range app.Items {
+		if err := item.Data.Validate(); err != nil {
+			bulkErrors = append(bulkErrors, errs.BulkItemError{
+				Index: i,
+				Field: "data",
+				Error: err.Error(),
+			})
+			continue
+		}
+
+		id, err := uuid.Parse(item.ID)
+		if err != nil {
+			bulkErrors = append(bulkErrors, errs.BulkItemError{
+				Index: i,
+				Field: "id",
+				Error: err.Error(),
+			})
+			continue
+		}
+
+		ur, err := toBusUpdateResource(item.Data)
+		if err != nil {
+			bulkErrors = append(bulkErrors, errs.BulkItemError{
+				Index: i,
+				Field: "data",
+				Error: err.Error(),
+			})
+			continue
+		}
+
+		updates = append(updates, resourcebus.UpdateResourceWithID{
+			ID:   id,
+			Data: ur,
+		})
+	}
+
+	if len(bulkErrors) > 0 {
+		return BulkResources{}, errs.NewBulkValidationError(bulkErrors)
+	}
+
+	resources, err := a.resourceBus.BulkUpdate(ctx, updates)
+	if err != nil {
+		if errors.Is(err, resourcebus.ErrUniqueEmail) {
+			return BulkResources{}, errs.New(errs.Aborted, resourcebus.ErrUniqueEmail)
+		}
+		if errors.Is(err, resourcebus.ErrNotFound) {
+			return BulkResources{}, errs.New(errs.NotFound, resourcebus.ErrNotFound)
+		}
+		return BulkResources{}, errs.Newf(errs.Internal, "bulkupdate: %s", err)
+	}
+
+	return BulkResources{
+		Items:   toAppResources(resources),
+		Updated: len(resources),
+	}, nil
+}
+
+// BulkDelete removes multiple resources from the system.
+func (a *App) BulkDelete(ctx context.Context, app BulkDeleteResources) (BulkDeleteResult, error) {
+	if err := bulk.ValidateBatchSize(len(app.IDs)); err != nil {
+		return BulkDeleteResult{}, errs.New(errs.FailedPrecondition, err)
+	}
+
+	// Validate and convert all IDs first (fail-fast)
+	var bulkErrors []errs.BulkItemError
+	ids := make([]uuid.UUID, 0, len(app.IDs))
+
+	for i, idStr := range app.IDs {
+		id, err := uuid.Parse(idStr)
+		if err != nil {
+			bulkErrors = append(bulkErrors, errs.BulkItemError{
+				Index: i,
+				Field: "id",
+				Error: err.Error(),
+			})
+			continue
+		}
+		ids = append(ids, id)
+	}
+
+	if len(bulkErrors) > 0 {
+		return BulkDeleteResult{}, errs.NewBulkValidationError(bulkErrors)
+	}
+
+	if err := a.resourceBus.BulkDelete(ctx, ids); err != nil {
+		return BulkDeleteResult{}, errs.Newf(errs.Internal, "bulkdelete: %s", err)
+	}
+
+	return BulkDeleteResult{
+		Deleted: len(ids),
+	}, nil
 }

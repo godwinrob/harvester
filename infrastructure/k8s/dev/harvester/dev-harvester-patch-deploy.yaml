@@ -15,6 +15,15 @@ spec:
       dnsPolicy: ClusterFirstWithHostNet
       hostNetwork: true
 
+      initContainers:
+        - name: init-migrate-seed
+          envFrom:
+            - configMapRef:
+                name: harvester-config
+          env:
+            - name: HARVESTER_DB_HOST
+              value: "localhost"
+
       containers:
         - name: harvester
           resources:
@@ -22,3 +31,9 @@ spec:
               cpu: "250m"
             limits:
               cpu: "250m"
+          envFrom:
+            - configMapRef:
+                name: harvester-config
+          env:
+            - name: HARVESTER_DB_HOST
+              value: "localhost"

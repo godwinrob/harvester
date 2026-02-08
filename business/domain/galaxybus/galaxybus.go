@@ -28,6 +28,9 @@ type Storer interface {
 	Count(ctx context.Context, filter QueryFilter) (int, error)
 	QueryByID(ctx context.Context, galaxyID uuid.UUID) (Galaxy, error)
 	QueryByName(ctx context.Context, galaxyName string) (Galaxy, error)
+	BulkCreate(ctx context.Context, galaxies []Galaxy) error
+	BulkUpdate(ctx context.Context, galaxies []Galaxy) error
+	BulkDelete(ctx context.Context, ids []uuid.UUID) error
 }
 
 // Business manages the set of APIs for galaxy access.
@@ -130,4 +133,67 @@ func (b *Business) QueryByName(ctx context.Context, galaxyName string) (Galaxy, 
 	}
 
 	return galaxy, nil
+}
+
+// BulkCreate adds multiple new galaxies to the system in a single transaction.
+func (b *Business) BulkCreate(ctx context.Context, newGalaxies []NewGalaxy) ([]Galaxy, error) {
+	galaxies := make([]Galaxy, len(newGalaxies))
+	now := time.Now()
+
+	for i, ng := range newGalaxies {
+		galaxies[i] = Galaxy{
+			ID:          uuid.New(),
+			Name:        ng.Name,
+			OwnerUserID: ng.OwnerUserID,
+			Enabled:     true,
+			DateCreated: now,
+			DateUpdated: now,
+		}
+	}
+
+	if err := b.storer.BulkCreate(ctx, galaxies); err != nil {
+		return nil, fmt.Errorf("bulkcreate: %w", err)
+	}
+
+	return galaxies, nil
+}
+
+// BulkUpdate modifies multiple galaxies in a single transaction.
+func (b *Business) BulkUpdate(ctx context.Context, updates []UpdateGalaxyWithID) ([]Galaxy, error) {
+	galaxies := make([]Galaxy, len(updates))
+
+	for i, upd := range updates {
+		gal, err := b.storer.QueryByID(ctx, upd.ID)
+		if err != nil {
+			return nil, fmt.Errorf("querybyid[%d]: %w", i, err)
+		}
+
+		if upd.Data.Name != nil {
+			gal.Name = *upd.Data.Name
+		}
+		if upd.Data.OwnerUserID != nil {
+			gal.OwnerUserID = *upd.Data.OwnerUserID
+		}
+		if upd.Data.Enabled != nil {
+			gal.Enabled = *upd.Data.Enabled
+		}
+		gal.DateUpdated = time.Now()
+
+		galaxies[i] = gal
+	}
+
+	if err := b.storer.BulkUpdate(ctx, galaxies); err != nil {
+		return nil, fmt.Errorf("bulkupdate: %w", err)
+	}
+
+	return galaxies, nil
+}
+
+// BulkDelete removes multiple galaxies in a single transaction.
+func (b *Business) BulkDelete(ctx context.Context, ids []uuid.UUID) error {
+	if err := b.storer.BulkDelete(ctx, ids); err != nil {
+		return fmt.Errorf("bulkdelete: %w", err)
+	}
+
+	return nil
 }

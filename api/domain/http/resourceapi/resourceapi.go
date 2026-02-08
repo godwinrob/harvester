@@ -86,3 +86,45 @@ func (api *api) queryByName(ctx context.Context, r *http.Request) (web.Encoder, 
 
 	return usr, nil
 }
+
+func (api *api) bulkCreate(ctx context.Context, r *http.Request) (web.Encoder, error) {
+	var app resourceapp.BulkNewResources
+	if err := web.Decode(r, &app); err != nil {
+		return nil, errs.New(errs.FailedPrecondition, err)
+	}
+
+	result, err := api.resourceApp.BulkCreate(ctx, app)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+func (api *api) bulkUpdate(ctx context.Context, r *http.Request) (web.Encoder, error) {
+	var app resourceapp.BulkUpdateResources
+	if err := web.Decode(r, &app); err != nil {
+		return nil, errs.New(errs.FailedPrecondition, err)
+	}
+
+	result, err := api.resourceApp.BulkUpdate(ctx, app)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+func (api *api) bulkDelete(ctx context.Context, r *http.Request) (web.Encoder, error) {
+	var app resourceapp.BulkDeleteResources
+	if err := web.Decode(r, &app); err != nil {
+		return nil, errs.New(errs.FailedPrecondition, err)
+	}
+
+	result, err := api.resourceApp.BulkDelete(ctx, app)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}

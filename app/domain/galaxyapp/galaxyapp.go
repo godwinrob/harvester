@@ -3,6 +3,7 @@ package galaxyapp
 import (
 	"context"
 	"errors"
+	"github.com/godwinrob/harvester/app/sdk/bulk"
 	"github.com/godwinrob/harvester/app/sdk/errs"
 	"github.com/godwinrob/harvester/app/sdk/page"
 	"github.com/godwinrob/harvester/business/domain/galaxybus"
@@ -145,4 +146,157 @@ func (a *App) QueryByName(ctx context.Context, galaxyName string) (Galaxy, error
 	}
 
 	return toAppGalaxy(gal), nil
+}
+
+// BulkCreate adds multiple new galaxies to the system.
+func (a *App) BulkCreate(ctx context.Context, app BulkNewGalaxies) (BulkGalaxies, error) {
+	if err := bulk.ValidateBatchSize(len(app.Items)); err != nil {
+		return BulkGalaxies{}, errs.New(errs.FailedPrecondition, err)
+	}
+
+	// Validate and convert all items first (fail-fast)
+	var bulkErrors []errs.BulkItemError
+	newGalaxies := make([]galaxybus.NewGalaxy, 0, len(app.Items))
+
+	for i, item := range app.Items {
+		if err := item.Validate(); err != nil {
+			bulkErrors = append(bulkErrors, errs.BulkItemError{
+				Index: i,
+				Field: "item",
+				Error: err.Error(),
+			})
+			continue
+		}
+
+		ng, err := toBusNewGalaxy(item)
+		if err != nil {
+			bulkErrors = append(bulkErrors, errs.BulkItemError{
+				Index: i,
+				Field: "item",
+				Error: err.Error(),
+			})
+			continue
+		}
+		newGalaxies = append(newGalaxies, ng)
+	}
+
+	if len(bulkErrors) > 0 {
+		return BulkGalaxies{}, errs.NewBulkValidationError(bulkErrors)
+	}
+
+	galaxies, err := a.galaxyBus.BulkCreate(ctx, newGalaxies)
+	if err != nil {
+		if errors.Is(err, galaxybus.ErrUniqueEmail) {
+			return BulkGalaxies{}, errs.New(errs.Aborted, galaxybus.ErrUniqueEmail)
+		}
+		return BulkGalaxies{}, errs.Newf(errs.Internal, "bulkcreate: %s", err)
+	}
+
+	return BulkGalaxies{
+		Items:   toAppGalaxies(galaxies),
+		Created: len(galaxies),
+	}, nil
+}
+
+// BulkUpdate modifies multiple existing galaxies.
+func (a *App) BulkUpdate(ctx context.Context, app BulkUpdateGalaxies) (BulkGalaxies, error) {
+	if err := bulk.ValidateBatchSize(len(app.Items)); err != nil {
+		return BulkGalaxies{}, errs.New(errs.FailedPrecondition, err)
+	}
+
+	// Validate and convert all items first (fail-fast)
+	var bulkErrors []errs.BulkItemError
+	updates := make([]galaxybus.UpdateGalaxyWithID, 0, len(app.Items))
+
+	for i, item := range app.Items {
+		if err := item.Data.Validate(); err != nil {
+			bulkErrors = append(bulkErrors, errs.BulkItemError{
+				Index: i,
+				Field: "data",
+				Error: err.Error(),
+			})
+			continue
+		}
+
+		id, err := uuid.Parse(item.ID)
+		if err != nil {
+			bulkErrors = append(bulkErrors, errs.BulkItemError{
+				Index: i,
+				Field: "id",
+				Error: err.Error(),
+			})
+			continue
+		}
+
+		ug, err := toBusUpdateGalaxy(item.Data)
+		if err != nil {
+			bulkErrors = append(bulkErrors, errs.BulkItemError{
+				Index: i,
+				Field: "data",
+				Error: err.Error(),
+			})
+			continue
+		}
+
+		updates = append(updates, galaxybus.UpdateGalaxyWithID{
+			ID:   id,
+			Data: ug,
+		})
+	}
+
+	if len(bulkErrors) > 0 {
+		return BulkGalaxies{}, errs.NewBulkValidationError(bulkErrors)
+	}
+
+	galaxies, err := a.galaxyBus.BulkUpdate(ctx, updates)
+	if err != nil {
+		if errors.Is(err, galaxybus.ErrUniqueEmail) {
+			return BulkGalaxies{}, errs.New(errs.Aborted, galaxybus.ErrUniqueEmail)
+		}
+		if errors.Is(err, galaxybus.ErrNotFound) {
+			return BulkGalaxies{}, errs.New(errs.NotFound, galaxybus.ErrNotFound)
+		}
+		return BulkGalaxies{}, errs.Newf(errs.Internal, "bulkupdate: %s", err)
+	}
+
+	return BulkGalaxies{
+		Items:   toAppGalaxies(galaxies),
+		Updated: len(galaxies),
+	}, nil
+}
+
+// BulkDelete removes multiple galaxies from the system.
+func (a *App) BulkDelete(ctx context.Context, app BulkDeleteGalaxies) (BulkDeleteResult, error) {
+	if err := bulk.ValidateBatchSize(len(app.IDs)); err != nil {
+		return BulkDeleteResult{}, errs.New(errs.FailedPrecondition, err)
+	}
+
+	// Validate and convert all IDs first (fail-fast)
+	var bulkErrors []errs.BulkItemError
+	ids := make([]uuid.UUID, 0, len(app.IDs))
+
+	for i, idStr := range app.IDs {
+		id, err := uuid.Parse(idStr)
+		if err != nil {
+			bulkErrors = append(bulkErrors, errs.BulkItemError{
+				Index: i,
+				Field: "id",
+				Error: err.Error(),
+			})
+			continue
+		}
+		ids = append(ids, id)
+	}
+
+	if len(bulkErrors) > 0 {
+		return BulkDeleteResult{}, errs.NewBulkValidationError(bulkErrors)
+	}
+
+	if err := a.galaxyBus.BulkDelete(ctx, ids); err != nil {
+		return BulkDeleteResult{}, errs.Newf(errs.Internal, "bulkdelete: %s", err)
+	}
+
+	return BulkDeleteResult{
+		Deleted: len(ids),
+	}, nil
 }
