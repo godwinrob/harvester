@@ -101,6 +101,7 @@ export function Sidebar() {
                   variant="ghost"
                   size="icon"
                   className="w-full justify-center"
+                  aria-label="Settings"
                 >
                   <Settings className="h-5 w-5" />
                 </Button>
@@ -113,6 +114,7 @@ export function Sidebar() {
                   variant="ghost"
                   size="icon"
                   className="w-full justify-center text-destructive hover:text-destructive"
+                  aria-label="Sign out"
                 >
                   <LogOut className="h-5 w-5" />
                 </Button>

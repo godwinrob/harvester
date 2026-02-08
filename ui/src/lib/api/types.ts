@@ -32,8 +32,8 @@ export interface BulkDeleteResponse {
 
 export interface BulkErrorItem {
   index: number
+  field?: string
   error: string
-  fields?: Record<string, string[]>
 }
 
 export interface ApiErrorResponse {

@@ -18,15 +18,28 @@ export function useBulkDeleteGalaxies() {
 
       const previousLists = new Map<readonly unknown[], PaginatedResponse<Galaxy>>()
 
+      const idsToDelete = new Set(ids)
+
       queryClient
         .getQueriesData<PaginatedResponse<Galaxy>>({ queryKey: queryKeys.galaxies.lists() })
         .forEach(([key, data]) => {
           if (data) {
             previousLists.set(key, data)
+
+            // Single-pass filter: remove deleted items and count removals
+            let removedCount = 0
+            const filteredItems = data.items.filter((galaxy) => {
+              if (idsToDelete.has(galaxy.id)) {
+                removedCount++
+                return false
+              }
+              return true
+            })
+
             queryClient.setQueryData<PaginatedResponse<Galaxy>>(key, {
               ...data,
-              items: data.items.filter((galaxy) => !ids.includes(galaxy.id)),
-              total: data.total - ids.filter((id) => data.items.some((g) => g.id === id)).length,
+              items: filteredItems,
+              total: data.total - removedCount,
             })
           }
         })
