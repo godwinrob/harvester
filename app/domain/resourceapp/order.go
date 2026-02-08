@@ -10,5 +10,4 @@ var defaultOrderBy = order.NewBy(resourcebus.OrderByID, order.ASC)
 var orderByFields = map[string]string{
 	"resource_id":   resourcebus.OrderByID,
 	"resource_name": resourcebus.OrderByName,
-	"enabled":       resourcebus.OrderByEnabled,
 }

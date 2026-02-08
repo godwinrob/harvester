@@ -14,7 +14,7 @@ import (
 // Set of error variables for CRUD operations.
 var (
 	ErrNotFound              = errors.New("galaxy not found")
-	ErrUniqueEmail           = errors.New("email is not unique")
+	ErrUniqueName            = errors.New("galaxy name is not unique")
 	ErrAuthenticationFailure = errors.New("authentication failed")
 )
 

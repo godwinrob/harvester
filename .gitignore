@@ -23,6 +23,9 @@ ui/dist/
 ui/.env.local
 ui/.env.*.local
 
+# Infrastructure / Docker
+infrastructure/docker/.env
+
 # OS files
 .DS_Store
 Thumbs.db

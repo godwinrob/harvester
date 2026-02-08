@@ -38,7 +38,7 @@ func (s *Store) Create(ctx context.Context, res resourcebus.Resource) error {
 
 	if err := sqldb.NamedExecContext(ctx, s.log, s.db, q, toDBResource(res)); err != nil {
 		if errors.Is(err, sqldb.ErrDBDuplicatedEntry) {
-			return fmt.Errorf("namedexeccontext: %w", resourcebus.ErrUniqueEmail)
+			return fmt.Errorf("namedexeccontext: %w", resourcebus.ErrUniqueName)
 		}
 		return fmt.Errorf("namedexeccontext: %w", err)
 	}
@@ -73,7 +73,7 @@ func (s *Store) Update(ctx context.Context, res resourcebus.Resource) error {
 
 	if err := sqldb.NamedExecContext(ctx, s.log, s.db, q, toDBResource(res)); err != nil {
 		if errors.Is(err, sqldb.ErrDBDuplicatedEntry) {
-			return resourcebus.ErrUniqueEmail
+			return resourcebus.ErrUniqueName
 		}
 		return fmt.Errorf("namedexeccontext: %w", err)
 	}
@@ -222,7 +222,7 @@ func (s *Store) BulkCreate(ctx context.Context, resources []resourcebus.Resource
 		for i, res := range resources {
 			if err := sqldb.NamedExecContextWithTx(ctx, s.log, tx, q, toDBResource(res)); err != nil {
 				if errors.Is(err, sqldb.ErrDBDuplicatedEntry) {
-					return fmt.Errorf("item[%d]: %w", i, resourcebus.ErrUniqueEmail)
+					return fmt.Errorf("item[%d]: %w", i, resourcebus.ErrUniqueName)
 				}
 				return fmt.Errorf("item[%d]: %w", i, err)
 			}
@@ -258,14 +258,15 @@ func (s *Store) BulkUpdate(ctx context.Context, resources []resourcebus.Resource
 			"oq" = :oq,
 			"sr" = :sr,
 			"ut" = :ut,
-			"er" = :er
+			"er" = :er,
+			"updated_at" = :updated_at
 		WHERE
 			resource_id = :resource_id`
 
 		for i, res := range resources {
 			if err := sqldb.NamedExecContextWithTx(ctx, s.log, tx, q, toDBResource(res)); err != nil {
 				if errors.Is(err, sqldb.ErrDBDuplicatedEntry) {
-					return fmt.Errorf("item[%d]: %w", i, resourcebus.ErrUniqueEmail)
+					return fmt.Errorf("item[%d]: %w", i, resourcebus.ErrUniqueName)
 				}
 				return fmt.Errorf("item[%d]: %w", i, err)
 			}

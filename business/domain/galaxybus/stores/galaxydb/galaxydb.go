@@ -38,7 +38,7 @@ func (s *Store) Create(ctx context.Context, gal galaxybus.Galaxy) error {
 
 	if err := sqldb.NamedExecContext(ctx, s.log, s.db, q, toDBGalaxy(gal)); err != nil {
 		if errors.Is(err, sqldb.ErrDBDuplicatedEntry) {
-			return fmt.Errorf("namedexeccontext: %w", galaxybus.ErrUniqueEmail)
+			return fmt.Errorf("namedexeccontext: %w", galaxybus.ErrUniqueName)
 		}
 		return fmt.Errorf("namedexeccontext: %w", err)
 	}
@@ -61,7 +61,7 @@ func (s *Store) Update(ctx context.Context, gal galaxybus.Galaxy) error {
 
 	if err := sqldb.NamedExecContext(ctx, s.log, s.db, q, toDBGalaxy(gal)); err != nil {
 		if errors.Is(err, sqldb.ErrDBDuplicatedEntry) {
-			return galaxybus.ErrUniqueEmail
+			return galaxybus.ErrUniqueName
 		}
 		return fmt.Errorf("namedexeccontext: %w", err)
 	}
@@ -210,7 +210,7 @@ func (s *Store) BulkCreate(ctx context.Context, galaxies []galaxybus.Galaxy) err
 		for i, gal := range galaxies {
 			if err := sqldb.NamedExecContextWithTx(ctx, s.log, tx, q, toDBGalaxy(gal)); err != nil {
 				if errors.Is(err, sqldb.ErrDBDuplicatedEntry) {
-					return fmt.Errorf("item[%d]: %w", i, galaxybus.ErrUniqueEmail)
+					return fmt.Errorf("item[%d]: %w", i, galaxybus.ErrUniqueName)
 				}
 				return fmt.Errorf("item[%d]: %w", i, err)
 			}
@@ -241,7 +241,7 @@ func (s *Store) BulkUpdate(ctx context.Context, galaxies []galaxybus.Galaxy) err
 		for i, gal := range galaxies {
 			if err := sqldb.NamedExecContextWithTx(ctx, s.log, tx, q, toDBGalaxy(gal)); err != nil {
 				if errors.Is(err, sqldb.ErrDBDuplicatedEntry) {
-					return fmt.Errorf("item[%d]: %w", i, galaxybus.ErrUniqueEmail)
+					return fmt.Errorf("item[%d]: %w", i, galaxybus.ErrUniqueName)
 				}
 				return fmt.Errorf("item[%d]: %w", i, err)
 			}

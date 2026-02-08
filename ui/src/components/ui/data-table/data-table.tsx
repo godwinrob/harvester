@@ -82,6 +82,10 @@ export function DataTable<TData, TValue>({
   const rowSelection = externalRowSelection ?? internalRowSelection
   const currentPagination = pagination ?? internalPagination
 
+  // Determine if pagination/sorting are controlled externally (manual mode)
+  const isManualPagination = pageCount !== undefined
+  const isManualSorting = externalSorting !== undefined || onSortingChange !== undefined
+
   const table = useReactTable({
     data,
     columns,
@@ -125,10 +129,10 @@ export function DataTable<TData, TValue>({
     },
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
-    getPaginationRowModel: pageCount ? undefined : getPaginationRowModel(),
-    getSortedRowModel: onSortingChange ? undefined : getSortedRowModel(),
-    manualPagination: !!pageCount,
-    manualSorting: !!onSortingChange,
+    getPaginationRowModel: isManualPagination ? undefined : getPaginationRowModel(),
+    getSortedRowModel: isManualSorting ? undefined : getSortedRowModel(),
+    manualPagination: isManualPagination,
+    manualSorting: isManualSorting,
   })
 
   return (

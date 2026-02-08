@@ -12,10 +12,20 @@ metadata:
   namespace: harvester-system
 data:
   HARVESTER_DB_HOST: "postgres.harvester-system.svc.cluster.local"
-  HARVESTER_DB_USER: "postgres"
-  HARVESTER_DB_PASSWORD: "postgres"
   HARVESTER_DB_NAME: "postgres"
   HARVESTER_DB_DISABLE_TLS: "true"
+
+---
+
+apiVersion: v1
+kind: Secret
+metadata:
+  name: harvester-db-secret
+  namespace: harvester-system
+type: Opaque
+stringData:
+  HARVESTER_DB_USER: "postgres"
+  HARVESTER_DB_PASSWORD: "postgres"
 
 ---
 
@@ -45,6 +55,8 @@ spec:
           envFrom:
             - configMapRef:
                 name: harvester-config
+            - secretRef:
+                name: harvester-db-secret
 
       containers:
         - name: harvester
@@ -59,6 +71,8 @@ spec:
           envFrom:
             - configMapRef:
                 name: harvester-config
+            - secretRef:
+                name: harvester-db-secret
 
           env:
             - name: GOMAXPROCS

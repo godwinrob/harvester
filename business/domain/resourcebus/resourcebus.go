@@ -15,7 +15,7 @@ import (
 // Set of error variables for CRUD operations.
 var (
 	ErrNotFound              = errors.New("resource not found")
-	ErrUniqueEmail           = errors.New("email is not unique")
+	ErrUniqueName            = errors.New("resource name is not unique")
 	ErrAuthenticationFailure = errors.New("authentication failed")
 )
 
