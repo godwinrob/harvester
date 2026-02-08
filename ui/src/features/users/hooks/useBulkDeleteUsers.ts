@@ -20,15 +20,28 @@ export function useBulkDeleteUsers() {
       // Snapshot and optimistically remove from all list caches
       const previousLists = new Map<readonly unknown[], PaginatedResponse<User>>()
 
+      const idsToDelete = new Set(ids)
+
       queryClient
         .getQueriesData<PaginatedResponse<User>>({ queryKey: queryKeys.users.lists() })
         .forEach(([key, data]) => {
           if (data) {
             previousLists.set(key, data)
+
+            // Single-pass filter: remove deleted items and count removals
+            let removedCount = 0
+            const filteredItems = data.items.filter((user) => {
+              if (idsToDelete.has(user.id)) {
+                removedCount++
+                return false
+              }
+              return true
+            })
+
             queryClient.setQueryData<PaginatedResponse<User>>(key, {
               ...data,
-              items: data.items.filter((user) => !ids.includes(user.id)),
-              total: data.total - ids.filter((id) => data.items.some((u) => u.id === id)).length,
+              items: filteredItems,
+              total: data.total - removedCount,
             })
           }
         })
