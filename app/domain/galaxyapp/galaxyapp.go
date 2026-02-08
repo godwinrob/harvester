@@ -39,8 +39,8 @@ func (a *App) Create(ctx context.Context, app NewGalaxy) (Galaxy, error) {
 
 	gal, err := a.galaxyBus.Create(ctx, nc)
 	if err != nil {
-		if errors.Is(err, galaxybus.ErrUniqueEmail) {
-			return Galaxy{}, errs.New(errs.Aborted, galaxybus.ErrUniqueEmail)
+		if errors.Is(err, galaxybus.ErrUniqueName) {
+			return Galaxy{}, errs.New(errs.Aborted, galaxybus.ErrUniqueName)
 		}
 		return Galaxy{}, errs.Newf(errs.Internal, "create: gal[%+v]: %s", gal, err)
 	}
@@ -186,8 +186,8 @@ func (a *App) BulkCreate(ctx context.Context, app BulkNewGalaxies) (BulkGalaxies
 
 	galaxies, err := a.galaxyBus.BulkCreate(ctx, newGalaxies)
 	if err != nil {
-		if errors.Is(err, galaxybus.ErrUniqueEmail) {
-			return BulkGalaxies{}, errs.New(errs.Aborted, galaxybus.ErrUniqueEmail)
+		if errors.Is(err, galaxybus.ErrUniqueName) {
+			return BulkGalaxies{}, errs.New(errs.Aborted, galaxybus.ErrUniqueName)
 		}
 		return BulkGalaxies{}, errs.Newf(errs.Internal, "bulkcreate: %s", err)
 	}
@@ -250,8 +250,8 @@ func (a *App) BulkUpdate(ctx context.Context, app BulkUpdateGalaxies) (BulkGalax
 
 	galaxies, err := a.galaxyBus.BulkUpdate(ctx, updates)
 	if err != nil {
-		if errors.Is(err, galaxybus.ErrUniqueEmail) {
-			return BulkGalaxies{}, errs.New(errs.Aborted, galaxybus.ErrUniqueEmail)
+		if errors.Is(err, galaxybus.ErrUniqueName) {
+			return BulkGalaxies{}, errs.New(errs.Aborted, galaxybus.ErrUniqueName)
 		}
 		if errors.Is(err, galaxybus.ErrNotFound) {
 			return BulkGalaxies{}, errs.New(errs.NotFound, galaxybus.ErrNotFound)

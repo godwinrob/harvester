@@ -39,8 +39,8 @@ func (a *App) Create(ctx context.Context, app NewResource) (Resource, error) {
 
 	usr, err := a.resourceBus.Create(ctx, nc)
 	if err != nil {
-		if errors.Is(err, resourcebus.ErrUniqueEmail) {
-			return Resource{}, errs.New(errs.Aborted, resourcebus.ErrUniqueEmail)
+		if errors.Is(err, resourcebus.ErrUniqueName) {
+			return Resource{}, errs.New(errs.Aborted, resourcebus.ErrUniqueName)
 		}
 		return Resource{}, errs.Newf(errs.Internal, "create: usr[%+v]: %s", usr, err)
 	}
@@ -185,8 +185,8 @@ func (a *App) BulkCreate(ctx context.Context, app BulkNewResources) (BulkResourc
 
 	resources, err := a.resourceBus.BulkCreate(ctx, newResources)
 	if err != nil {
-		if errors.Is(err, resourcebus.ErrUniqueEmail) {
-			return BulkResources{}, errs.New(errs.Aborted, resourcebus.ErrUniqueEmail)
+		if errors.Is(err, resourcebus.ErrUniqueName) {
+			return BulkResources{}, errs.New(errs.Aborted, resourcebus.ErrUniqueName)
 		}
 		return BulkResources{}, errs.Newf(errs.Internal, "bulkcreate: %s", err)
 	}
@@ -249,8 +249,8 @@ func (a *App) BulkUpdate(ctx context.Context, app BulkUpdateResources) (BulkReso
 
 	resources, err := a.resourceBus.BulkUpdate(ctx, updates)
 	if err != nil {
-		if errors.Is(err, resourcebus.ErrUniqueEmail) {
-			return BulkResources{}, errs.New(errs.Aborted, resourcebus.ErrUniqueEmail)
+		if errors.Is(err, resourcebus.ErrUniqueName) {
+			return BulkResources{}, errs.New(errs.Aborted, resourcebus.ErrUniqueName)
 		}
 		if errors.Is(err, resourcebus.ErrNotFound) {
 			return BulkResources{}, errs.New(errs.NotFound, resourcebus.ErrNotFound)
