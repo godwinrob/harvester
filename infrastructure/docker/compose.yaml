@@ -1,19 +1,49 @@
 services:
+  postgres:
+    image: postgres:15.5
+    ports:
+      - "127.0.0.1:5432:5432"
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  admin:
+    depends_on:
+      postgres:
+        condition: service_healthy
+    build:
+      context: ../..
+      dockerfile: ./infrastructure/docker/Dockerfile.admin
+    env_file:
+      - .env
+    restart: "no"
+
   harvester:
     depends_on:
-      - postgres
+      admin:
+        condition: service_completed_successfully
     build:
       context: ../..
       dockerfile: ./infrastructure/docker/Dockerfile.harvester
     ports:
       - "127.0.0.1:3000:3000"
+      - "127.0.0.1:3010:3010"
     env_file:
       - .env
-    deploy:
-      restart_policy:
-        condition: on-failure
-        delay: 5s
-        max_attempts: 1
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:3000/v1/liveness || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
     develop:
       watch:
         - action: rebuild
@@ -24,21 +54,28 @@ services:
             - docs/**
             - .git/**
             - .github/**
-  postgres:
-    image: postgres:15.5
-    ports:
-      - "127.0.0.1:5432:5432"
-    restart:
-      always
-    environment:
-        POSTGRES_USER: postgres
-        POSTGRES_PASSWORD: postgres
-        POSTGRES_DB: postgres
-  admin:
+            - ui/**
+
+  ui:
     depends_on:
-      - postgres
+      harvester:
+        condition: service_healthy
     build:
       context: ../..
-      dockerfile: ./infrastructure/docker/Dockerfile.admin
-    restart:
-      no
+      dockerfile: ./infrastructure/docker/Dockerfile.ui
+    ports:
+      - "127.0.0.1:8080:80"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:80/ || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    develop:
+      watch:
+        - action: rebuild
+          path: ../../ui
+          ignore:
+            - node_modules/**
+            - dist/**

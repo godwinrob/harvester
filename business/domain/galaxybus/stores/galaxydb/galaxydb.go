@@ -38,7 +38,7 @@ func (s *Store) Create(ctx context.Context, gal galaxybus.Galaxy) error {
 
 	if err := sqldb.NamedExecContext(ctx, s.log, s.db, q, toDBGalaxy(gal)); err != nil {
 		if errors.Is(err, sqldb.ErrDBDuplicatedEntry) {
-			return fmt.Errorf("namedexeccontext: %w", galaxybus.ErrUniqueEmail)
+			return fmt.Errorf("namedexeccontext: %w", galaxybus.ErrUniqueName)
 		}
 		return fmt.Errorf("namedexeccontext: %w", err)
 	}
@@ -61,7 +61,7 @@ func (s *Store) Update(ctx context.Context, gal galaxybus.Galaxy) error {
 
 	if err := sqldb.NamedExecContext(ctx, s.log, s.db, q, toDBGalaxy(gal)); err != nil {
 		if errors.Is(err, sqldb.ErrDBDuplicatedEntry) {
-			return galaxybus.ErrUniqueEmail
+			return galaxybus.ErrUniqueName
 		}
 		return fmt.Errorf("namedexeccontext: %w", err)
 	}
@@ -179,7 +179,7 @@ func (s *Store) QueryByName(ctx context.Context, galaxyName string) (galaxybus.G
         galaxy_id, galaxy_name, owner_user_id, enabled, date_created, date_updated
 	FROM
 		galaxies
-	WHERE 
+	WHERE
 		galaxy_name = :galaxy_name`
 
 	var dbGalaxy galaxy
@@ -191,4 +191,87 @@ func (s *Store) QueryByName(ctx context.Context, galaxyName string) (galaxybus.G
 	}
 
 	return toBusGalaxy(dbGalaxy)
+}
+
+// BulkCreate inserts multiple galaxies into the database in a single transaction.
+func (s *Store) BulkCreate(ctx context.Context, galaxies []galaxybus.Galaxy) error {
+	db, ok := s.db.(*sqlx.DB)
+	if !ok {
+		return errors.New("bulk operations require *sqlx.DB")
+	}
+
+	return sqldb.WithTransaction(db, func(tx *sqlx.Tx) error {
+		const q = `
+		INSERT INTO galaxies
+			(galaxy_id, galaxy_name, owner_user_id, enabled, date_created, date_updated)
+		VALUES
+			(:galaxy_id, :galaxy_name, :owner_user_id, :enabled, :date_created, :date_updated)`
+
+		for i, gal := range galaxies {
+			if err := sqldb.NamedExecContextWithTx(ctx, s.log, tx, q, toDBGalaxy(gal)); err != nil {
+				if errors.Is(err, sqldb.ErrDBDuplicatedEntry) {
+					return fmt.Errorf("item[%d]: %w", i, galaxybus.ErrUniqueName)
+				}
+				return fmt.Errorf("item[%d]: %w", i, err)
+			}
+		}
+		return nil
+	})
+}
+
+// BulkUpdate updates multiple galaxies in the database in a single transaction.
+func (s *Store) BulkUpdate(ctx context.Context, galaxies []galaxybus.Galaxy) error {
+	db, ok := s.db.(*sqlx.DB)
+	if !ok {
+		return errors.New("bulk operations require *sqlx.DB")
+	}
+
+	return sqldb.WithTransaction(db, func(tx *sqlx.Tx) error {
+		const q = `
+		UPDATE
+			galaxies
+		SET
+			"galaxy_name" = :galaxy_name,
+			"owner_user_id" = :owner_user_id,
+			"enabled" = :enabled,
+			"date_updated" = :date_updated
+		WHERE
+			galaxy_id = :galaxy_id`
+
+		for i, gal := range galaxies {
+			if err := sqldb.NamedExecContextWithTx(ctx, s.log, tx, q, toDBGalaxy(gal)); err != nil {
+				if errors.Is(err, sqldb.ErrDBDuplicatedEntry) {
+					return fmt.Errorf("item[%d]: %w", i, galaxybus.ErrUniqueName)
+				}
+				return fmt.Errorf("item[%d]: %w", i, err)
+			}
+		}
+		return nil
+	})
+}
+
+// BulkDelete removes multiple galaxies from the database in a single transaction.
+func (s *Store) BulkDelete(ctx context.Context, ids []uuid.UUID) error {
+	db, ok := s.db.(*sqlx.DB)
+	if !ok {
+		return errors.New("bulk operations require *sqlx.DB")
+	}
+
+	return sqldb.WithTransaction(db, func(tx *sqlx.Tx) error {
+		data := struct {
+			IDs []string `db:"ids"`
+		}{
+			IDs: make([]string, len(ids)),
+		}
+		for i, id := range ids {
+			data.IDs[i] = id.String()
+		}
+
+		const q = `DELETE FROM galaxies WHERE galaxy_id IN (:ids)`
+
+		if err := sqldb.NamedExecContextUsingInWithTx(ctx, s.log, tx, q, data); err != nil {
+			return fmt.Errorf("namedexeccontextusingintx: %w", err)
+		}
+		return nil
+	})
 }

@@ -86,3 +86,45 @@ func (api *api) queryByName(ctx context.Context, r *http.Request) (web.Encoder, 
 
 	return usr, nil
 }
+
+func (api *api) bulkCreate(ctx context.Context, r *http.Request) (web.Encoder, error) {
+	var app galaxyapp.BulkNewGalaxies
+	if err := web.Decode(r, &app); err != nil {
+		return nil, errs.New(errs.FailedPrecondition, err)
+	}
+
+	result, err := api.galaxyApp.BulkCreate(ctx, app)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+func (api *api) bulkUpdate(ctx context.Context, r *http.Request) (web.Encoder, error) {
+	var app galaxyapp.BulkUpdateGalaxies
+	if err := web.Decode(r, &app); err != nil {
+		return nil, errs.New(errs.FailedPrecondition, err)
+	}
+
+	result, err := api.galaxyApp.BulkUpdate(ctx, app)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+func (api *api) bulkDelete(ctx context.Context, r *http.Request) (web.Encoder, error) {
+	var app galaxyapp.BulkDeleteGalaxies
+	if err := web.Decode(r, &app); err != nil {
+		return nil, errs.New(errs.FailedPrecondition, err)
+	}
+
+	result, err := api.galaxyApp.BulkDelete(ctx, app)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}

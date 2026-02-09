@@ -1,6 +1,7 @@
 package resourcedb
 
 import (
+	"database/sql"
 	"fmt"
 	"time"
 
@@ -9,31 +10,45 @@ import (
 )
 
 type resource struct {
-	ID                uuid.UUID `db:"resource_id"`
-	ResourceName      string    `db:"resource_name"`
-	GalaxyID          uuid.UUID `db:"galaxy_id"`
-	AddedAtDate       time.Time `db:"added_at"`
-	UpdatedAtDate     time.Time `db:"updated_at"`
-	AddedUserID       uuid.UUID `db:"added_user_id"`
-	ResourceType      string    `db:"resource_type"`
-	UnavailableAt     time.Time `db:"unavailable_at"`
-	UnavailableUserID uuid.UUID `db:"unavailable_user_id"`
-	Verified          bool      `db:"verified"`
-	VerifiedUserID    uuid.UUID `db:"verified_user_id"`
-	CR                int16     `db:"cr"`
-	CD                int16     `db:"cd"`
-	DR                int16     `db:"dr"`
-	FL                int16     `db:"fl"`
-	HR                int16     `db:"hr"`
-	MA                int16     `db:"ma"`
-	PE                int16     `db:"pe"`
-	OQ                int16     `db:"oq"`
-	SR                int16     `db:"sr"`
-	UT                int16     `db:"ut"`
-	ER                int16     `db:"er"`
+	ID                uuid.UUID      `db:"resource_id"`
+	ResourceName      string         `db:"resource_name"`
+	GalaxyID          uuid.UUID      `db:"galaxy_id"`
+	AddedAtDate       time.Time      `db:"added_at"`
+	UpdatedAtDate     time.Time      `db:"updated_at"`
+	AddedUserID       uuid.UUID      `db:"added_user_id"`
+	ResourceType      string         `db:"resource_type"`
+	UnavailableAt     sql.NullTime   `db:"unavailable_at"`
+	UnavailableUserID uuid.NullUUID  `db:"unavailable_user_id"`
+	Verified          bool           `db:"verified"`
+	VerifiedUserID    uuid.NullUUID  `db:"verified_user_id"`
+	CR                int16          `db:"cr"`
+	CD                int16          `db:"cd"`
+	DR                int16          `db:"dr"`
+	FL                int16          `db:"fl"`
+	HR                int16          `db:"hr"`
+	MA                int16          `db:"ma"`
+	PE                int16          `db:"pe"`
+	OQ                int16          `db:"oq"`
+	SR                int16          `db:"sr"`
+	UT                int16          `db:"ut"`
+	ER                int16          `db:"er"`
 }
 
 func toDBResource(bus resourcebus.Resource) resource {
+	var unavailableAt sql.NullTime
+	if !bus.UnavailableAt.IsZero() {
+		unavailableAt = sql.NullTime{Time: bus.UnavailableAt, Valid: true}
+	}
+
+	var unavailableUserID uuid.NullUUID
+	if bus.UnavailableUserID != uuid.Nil {
+		unavailableUserID = uuid.NullUUID{UUID: bus.UnavailableUserID, Valid: true}
+	}
+
+	var verifiedUserID uuid.NullUUID
+	if bus.VerifiedUserID != uuid.Nil {
+		verifiedUserID = uuid.NullUUID{UUID: bus.VerifiedUserID, Valid: true}
+	}
 
 	return resource{
 		ID:                bus.ID,
@@ -43,10 +58,10 @@ func toDBResource(bus resourcebus.Resource) resource {
 		UpdatedAtDate:     bus.UpdatedAtDate,
 		AddedUserID:       bus.AddedUserID,
 		ResourceType:      bus.ResourceType,
-		UnavailableAt:     bus.UnavailableAt,
-		UnavailableUserID: bus.UnavailableUserID,
+		UnavailableAt:     unavailableAt,
+		UnavailableUserID: unavailableUserID,
 		Verified:          bus.Verified,
-		VerifiedUserID:    bus.VerifiedUserID,
+		VerifiedUserID:    verifiedUserID,
 		CR:                bus.CR,
 		CD:                bus.CD,
 		DR:                bus.DR,
@@ -68,6 +83,21 @@ func toBusResource(db resource) (resourcebus.Resource, error) {
 		return resourcebus.Resource{}, fmt.Errorf("parse name: %w", err)
 	}
 
+	var unavailableAt time.Time
+	if db.UnavailableAt.Valid {
+		unavailableAt = db.UnavailableAt.Time
+	}
+
+	var unavailableUserID uuid.UUID
+	if db.UnavailableUserID.Valid {
+		unavailableUserID = db.UnavailableUserID.UUID
+	}
+
+	var verifiedUserID uuid.UUID
+	if db.VerifiedUserID.Valid {
+		verifiedUserID = db.VerifiedUserID.UUID
+	}
+
 	bus := resourcebus.Resource{
 		ID:                db.ID,
 		Name:              name,
@@ -76,10 +106,10 @@ func toBusResource(db resource) (resourcebus.Resource, error) {
 		UpdatedAtDate:     db.UpdatedAtDate,
 		AddedUserID:       db.AddedUserID,
 		ResourceType:      db.ResourceType,
-		UnavailableAt:     db.UnavailableAt,
-		UnavailableUserID: db.UnavailableUserID,
+		UnavailableAt:     unavailableAt,
+		UnavailableUserID: unavailableUserID,
 		Verified:          db.Verified,
-		VerifiedUserID:    db.VerifiedUserID,
+		VerifiedUserID:    verifiedUserID,
 		CR:                db.CR,
 		CD:                db.CD,
 		DR:                db.DR,

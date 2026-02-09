@@ -70,3 +70,9 @@ type UpdateResource struct {
 	UT                *int16
 	ER                *int16
 }
+
+// UpdateResourceWithID contains an ID and update data for bulk update operations.
+type UpdateResourceWithID struct {
+	ID   uuid.UUID
+	Data UpdateResource
+}

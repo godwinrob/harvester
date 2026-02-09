@@ -13,6 +13,7 @@ type QueryFilter struct {
 	GalaxyID         *uuid.UUID
 	ResourceName     *Name
 	ResourceType     *string
+	ResourceGroup    *string
 	StartCreatedDate *time.Time
 	EndCreatedDate   *time.Time
 	Verified         *bool

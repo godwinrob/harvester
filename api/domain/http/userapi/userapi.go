@@ -91,3 +91,45 @@ func (api *api) queryByID(ctx context.Context, r *http.Request) (web.Encoder, er
 
 	return usr, nil
 }
+
+func (api *api) bulkCreate(ctx context.Context, r *http.Request) (web.Encoder, error) {
+	var app userapp.BulkNewUsers
+	if err := web.Decode(r, &app); err != nil {
+		return nil, errs.New(errs.FailedPrecondition, err)
+	}
+
+	result, err := api.userApp.BulkCreate(ctx, app)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+func (api *api) bulkUpdate(ctx context.Context, r *http.Request) (web.Encoder, error) {
+	var app userapp.BulkUpdateUsers
+	if err := web.Decode(r, &app); err != nil {
+		return nil, errs.New(errs.FailedPrecondition, err)
+	}
+
+	result, err := api.userApp.BulkUpdate(ctx, app)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+func (api *api) bulkDelete(ctx context.Context, r *http.Request) (web.Encoder, error) {
+	var app userapp.BulkDeleteUsers
+	if err := web.Decode(r, &app); err != nil {
+		return nil, errs.New(errs.FailedPrecondition, err)
+	}
+
+	result, err := api.userApp.BulkDelete(ctx, app)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}

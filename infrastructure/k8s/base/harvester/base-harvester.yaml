@@ -5,6 +5,26 @@ metadata:
 
 ---
 
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: harvester-config
+  namespace: harvester-system
+data:
+  HARVESTER_DB_HOST: "postgres.harvester-system.svc.cluster.local"
+  HARVESTER_DB_NAME: "postgres"
+  HARVESTER_DB_DISABLE_TLS: "true"
+
+---
+
+# NOTE: The harvester-db-secret Secret must be created via:
+# - Kustomize overlays (dev/prod environments)
+# - External secret management (e.g., sealed-secrets, external-secrets-operator)
+# - Manual creation out-of-band
+# It should contain: HARVESTER_DB_USER and HARVESTER_DB_PASSWORD
+
+---
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -26,8 +46,13 @@ spec:
 
       initContainers:
         - name: init-migrate-seed
-          image: harvester-image
+          image: admin-image
           command: ['./admin']
+          envFrom:
+            - configMapRef:
+                name: harvester-config
+            - secretRef:
+                name: harvester-db-secret
 
       containers:
         - name: harvester
@@ -36,12 +61,34 @@ spec:
           ports:
             - name: harvester
               containerPort: 3000
+            - name: harvester-debug
+              containerPort: 3010
+
+          envFrom:
+            - configMapRef:
+                name: harvester-config
+            - secretRef:
+                name: harvester-db-secret
 
           env:
             - name: GOMAXPROCS
               valueFrom:
                 resourceFieldRef:
                   resource: limits.cpu
+
+          readinessProbe:
+            httpGet:
+              path: /v1/readiness
+              port: 3000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+
+          livenessProbe:
+            httpGet:
+              path: /v1/liveness
+              port: 3000
+            initialDelaySeconds: 10
+            periodSeconds: 30
 
 ---
 

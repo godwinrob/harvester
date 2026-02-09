@@ -28,11 +28,119 @@
 					"response": []
 				},
 				{
+					"name": "Bulk Create Users",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"items\": [\r\n        {\r\n            \"name\": \"John Doe\",\r\n            \"email\": \"john@example.com\",\r\n            \"roles\": [\"USER\"],\r\n            \"guild\": \"EXILE\",\r\n            \"password\": \"12345\",\r\n            \"passwordConfirm\": \"12345\"\r\n        },\r\n        {\r\n            \"name\": \"Jane Smith\",\r\n            \"email\": \"jane@example.com\",\r\n            \"roles\": [\"ADMIN\"],\r\n            \"guild\": \"REBEL\",\r\n            \"password\": \"12345\",\r\n            \"passwordConfirm\": \"12345\"\r\n        }\r\n    ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "localhost:3000/v1/users/bulk"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Users",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "localhost:3000/v1/users"
+					},
+					"response": []
+				},
+				{
 					"name": "Get User",
 					"request": {
 						"method": "GET",
 						"header": [],
 						"url": "localhost:3000/v1/users/42abd928-58f7-4d6e-a411-1ffbcf82c341"
+					},
+					"response": []
+				},
+				{
+					"name": "Update User",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"Rob Updated\",\r\n    \"enabled\": true\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "localhost:3000/v1/users/42abd928-58f7-4d6e-a411-1ffbcf82c341"
+					},
+					"response": []
+				},
+				{
+					"name": "Update User Role",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"roles\": [\"ADMIN\", \"USER\"]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "localhost:3000/v1/users/role/42abd928-58f7-4d6e-a411-1ffbcf82c341"
+					},
+					"response": []
+				},
+				{
+					"name": "Bulk Update Users",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"items\": [\r\n        {\r\n            \"id\": \"42abd928-58f7-4d6e-a411-1ffbcf82c341\",\r\n            \"data\": {\r\n                \"name\": \"Updated Name 1\",\r\n                \"enabled\": true\r\n            }\r\n        },\r\n        {\r\n            \"id\": \"55555555-5555-5555-5555-555555555555\",\r\n            \"data\": {\r\n                \"name\": \"Updated Name 2\",\r\n                \"enabled\": false\r\n            }\r\n        }\r\n    ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "localhost:3000/v1/users/bulk"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete User",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": "localhost:3000/v1/users/42abd928-58f7-4d6e-a411-1ffbcf82c341"
+					},
+					"response": []
+				},
+				{
+					"name": "Bulk Delete Users",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"ids\": [\r\n        \"42abd928-58f7-4d6e-a411-1ffbcf82c341\",\r\n        \"55555555-5555-5555-5555-555555555555\"\r\n    ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "localhost:3000/v1/users/bulk"
 					},
 					"response": []
 				}
@@ -58,6 +166,114 @@
 						"url": "localhost:3000/v1/galaxies"
 					},
 					"response": []
+				},
+				{
+					"name": "Bulk Create Galaxies",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"items\": [\r\n        {\r\n            \"name\": \"Galaxy One\",\r\n            \"ownerUserID\": \"4a0984e7-4a6f-47e5-a381-80c964f2e491\"\r\n        },\r\n        {\r\n            \"name\": \"Galaxy Two\",\r\n            \"ownerUserID\": \"4a0984e7-4a6f-47e5-a381-80c964f2e491\"\r\n        }\r\n    ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "localhost:3000/v1/galaxies/bulk"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Galaxies",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "localhost:3000/v1/galaxies"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Galaxy",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "localhost:3000/v1/galaxies/5d71e61b-fcc4-42df-a6ba-0cabc6c55384"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Galaxy by Name",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "localhost:3000/v1/galaxies/name/A%20New%20Hope"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Galaxy",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"Updated Galaxy Name\",\r\n    \"enabled\": true\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "localhost:3000/v1/galaxies/5d71e61b-fcc4-42df-a6ba-0cabc6c55384"
+					},
+					"response": []
+				},
+				{
+					"name": "Bulk Update Galaxies",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"items\": [\r\n        {\r\n            \"id\": \"5d71e61b-fcc4-42df-a6ba-0cabc6c55384\",\r\n            \"data\": {\r\n                \"name\": \"Updated Galaxy 1\",\r\n                \"enabled\": true\r\n            }\r\n        },\r\n        {\r\n            \"id\": \"66666666-6666-6666-6666-666666666666\",\r\n            \"data\": {\r\n                \"name\": \"Updated Galaxy 2\",\r\n                \"enabled\": false\r\n            }\r\n        }\r\n    ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "localhost:3000/v1/galaxies/bulk"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Galaxy",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": "localhost:3000/v1/galaxies/5d71e61b-fcc4-42df-a6ba-0cabc6c55384"
+					},
+					"response": []
+				},
+				{
+					"name": "Bulk Delete Galaxies",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"ids\": [\r\n        \"5d71e61b-fcc4-42df-a6ba-0cabc6c55384\",\r\n        \"66666666-6666-6666-6666-666666666666\"\r\n    ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "localhost:3000/v1/galaxies/bulk"
+					},
+					"response": []
 				}
 			]
 		},
@@ -79,6 +295,114 @@
 							}
 						},
 						"url": "localhost:3000/v1/resources"
+					},
+					"response": []
+				},
+				{
+					"name": "Bulk Create Resources",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"items\": [\r\n        {\r\n            \"name\": \"Resource One\",\r\n            \"galaxyID\": \"5d71e61b-fcc4-42df-a6ba-0cabc6c55384\",\r\n            \"addedUserID\": \"42abd928-58f7-4d6e-a411-1ffbcf82c341\",\r\n            \"resourceType\": \"mineral\",\r\n            \"oq\": 500,\r\n            \"cr\": 100,\r\n            \"cd\": 200\r\n        },\r\n        {\r\n            \"name\": \"Resource Two\",\r\n            \"galaxyID\": \"5d71e61b-fcc4-42df-a6ba-0cabc6c55384\",\r\n            \"addedUserID\": \"42abd928-58f7-4d6e-a411-1ffbcf82c341\",\r\n            \"resourceType\": \"gas\",\r\n            \"oq\": 800,\r\n            \"sr\": 150\r\n        }\r\n    ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "localhost:3000/v1/resources/bulk"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Resources",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "localhost:3000/v1/resources"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Resource",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "localhost:3000/v1/resources/77777777-7777-7777-7777-777777777777"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Resource by Name",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "localhost:3000/v1/resources/name/test"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Resource",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"Updated Resource\",\r\n    \"verified\": true,\r\n    \"oq\": 1000\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "localhost:3000/v1/resources/77777777-7777-7777-7777-777777777777"
+					},
+					"response": []
+				},
+				{
+					"name": "Bulk Update Resources",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"items\": [\r\n        {\r\n            \"id\": \"77777777-7777-7777-7777-777777777777\",\r\n            \"data\": {\r\n                \"name\": \"Updated Resource 1\",\r\n                \"verified\": true,\r\n                \"oq\": 950\r\n            }\r\n        },\r\n        {\r\n            \"id\": \"88888888-8888-8888-8888-888888888888\",\r\n            \"data\": {\r\n                \"name\": \"Updated Resource 2\",\r\n                \"verified\": false,\r\n                \"cr\": 300\r\n            }\r\n        }\r\n    ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "localhost:3000/v1/resources/bulk"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Resource",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": "localhost:3000/v1/resources/77777777-7777-7777-7777-777777777777"
+					},
+					"response": []
+				},
+				{
+					"name": "Bulk Delete Resources",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"ids\": [\r\n        \"77777777-7777-7777-7777-777777777777\",\r\n        \"88888888-8888-8888-8888-888888888888\"\r\n    ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "localhost:3000/v1/resources/bulk"
 					},
 					"response": []
 				}

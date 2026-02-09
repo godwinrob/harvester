@@ -38,3 +38,9 @@ type UpdateUser struct {
 	Password *string
 	Enabled  *bool
 }
+
+// UpdateUserWithID contains an ID and update data for bulk update operations.
+type UpdateUserWithID struct {
+	ID   uuid.UUID
+	Data UpdateUser
+}

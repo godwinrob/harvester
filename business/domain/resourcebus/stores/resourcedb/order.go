@@ -8,9 +8,24 @@ import (
 )
 
 var orderByFields = map[string]string{
-	resourcebus.OrderByID:      "resource_id",
-	resourcebus.OrderByName:    "resource_name",
-	resourcebus.OrderByEnabled: "enabled",
+	resourcebus.OrderByID:            "resource_id",
+	resourcebus.OrderByName:          "resource_name",
+	resourcebus.OrderByResourceType:  "resource_type",
+	resourcebus.OrderByVerified:      "verified",
+	resourcebus.OrderByUnavailableAt: "unavailable_at",
+	resourcebus.OrderByAddedAt:       "added_at",
+	resourcebus.OrderByEnabled:       "enabled",
+	resourcebus.OrderByCR:            "cr",
+	resourcebus.OrderByCD:            "cd",
+	resourcebus.OrderByDR:            "dr",
+	resourcebus.OrderByFL:            "fl",
+	resourcebus.OrderByHR:            "hr",
+	resourcebus.OrderByMA:            "ma",
+	resourcebus.OrderByPE:            "pe",
+	resourcebus.OrderByOQ:            "oq",
+	resourcebus.OrderBySR:            "sr",
+	resourcebus.OrderByUT:            "ut",
+	resourcebus.OrderByER:            "er",
 }
 
 func orderByClause(orderBy order.By) (string, error) {

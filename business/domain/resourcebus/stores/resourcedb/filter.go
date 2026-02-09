@@ -46,6 +46,11 @@ func applyFilter(filter resourcebus.QueryFilter, data map[string]interface{}, bu
 		wc = append(wc, "resource_type = :resource_type")
 	}
 
+	if filter.ResourceGroup != nil {
+		data["resource_group"] = *filter.ResourceGroup
+		wc = append(wc, "resource_type IN (SELECT resource_type FROM resource_type_groups WHERE resource_group = :resource_group)")
+	}
+
 	if filter.CR != nil {
 		data["cr"] = *filter.CR
 		wc = append(wc, "cr >= :cr")

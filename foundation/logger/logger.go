@@ -101,7 +101,8 @@ func (log *Logger) write(ctx context.Context, level Level, caller int, msg strin
 	}
 	r.Add(args...)
 
-	log.handler.Handle(ctx, r)
+	// Explicitly ignore error - nothing we can do if logging itself fails
+	_ = log.handler.Handle(ctx, r)
 }
 
 func new(w io.Writer, minLevel Level, serviceName string, traceIDFn TraceIDFn, events Events) *Logger {

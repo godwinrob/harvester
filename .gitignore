@@ -16,3 +16,16 @@ vendor/
 
 # Go workspace file
 go.work
+
+# UI / Node.js
+ui/node_modules/
+ui/dist/
+ui/.env.local
+ui/.env.*.local
+
+# Infrastructure / Docker
+infrastructure/docker/.env
+
+# OS files
+.DS_Store
+Thumbs.db

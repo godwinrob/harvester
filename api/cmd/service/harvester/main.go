@@ -96,6 +96,23 @@ func run(ctx context.Context, log *logger.Logger) error {
 	}
 
 	// -------------------------------------------------------------------------
+	// Validate Configuration
+
+	dbCfg := sqldb.Config{
+		User:         cfg.DB.User,
+		Password:     cfg.DB.Password,
+		Host:         cfg.DB.Host,
+		Name:         cfg.DB.Name,
+		MaxIdleConns: cfg.DB.MaxIdleConns,
+		MaxOpenConns: cfg.DB.MaxOpenConns,
+		DisableTLS:   cfg.DB.DisableTLS,
+	}
+
+	if err := sqldb.ValidateConfig(dbCfg); err != nil {
+		return fmt.Errorf("configuration error: %w", err)
+	}
+
+	// -------------------------------------------------------------------------
 	// App Starting
 
 	log.Info(ctx, "starting service", "version", cfg.Build)
@@ -110,15 +127,7 @@ func run(ctx context.Context, log *logger.Logger) error {
 
 	time.Sleep(10 * time.Second)
 
-	db, err := sqldb.Open(sqldb.Config{
-		User:         cfg.DB.User,
-		Password:     cfg.DB.Password,
-		Host:         cfg.DB.Host,
-		Name:         cfg.DB.Name,
-		MaxIdleConns: cfg.DB.MaxIdleConns,
-		MaxOpenConns: cfg.DB.MaxOpenConns,
-		DisableTLS:   cfg.DB.DisableTLS,
-	})
+	db, err := sqldb.Open(dbCfg)
 	if err != nil {
 		return fmt.Errorf("connecting to db: %w", err)
 	}

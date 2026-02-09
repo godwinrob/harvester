@@ -24,6 +24,34 @@ var (
 	seedDoc string
 )
 
+// Reset drops all tables and the darwin migrations table.
+// WARNING: This will delete all data! Only use in development.
+func Reset(ctx context.Context, db *sqlx.DB) error {
+	if err := sqldb.StatusCheck(ctx, db); err != nil {
+		return fmt.Errorf("status check database: %w", err)
+	}
+
+	// Drop tables in reverse dependency order
+	queries := []string{
+		"DROP TABLE IF EXISTS resource_type_groups CASCADE",
+		"DROP TABLE IF EXISTS resource_types CASCADE",
+		"DROP TABLE IF EXISTS resource_groups CASCADE",
+		"DROP TABLE IF EXISTS resources CASCADE",
+		"DROP TABLE IF EXISTS galaxies CASCADE",
+		"DROP TABLE IF EXISTS users CASCADE",
+		"DROP TABLE IF EXISTS darwin_migrations CASCADE",
+	}
+
+	for _, query := range queries {
+		if _, err := db.ExecContext(ctx, query); err != nil {
+			return fmt.Errorf("drop table: %w", err)
+		}
+	}
+
+	log.Println("Database reset complete - all tables dropped")
+	return nil
+}
+
 // Migrate attempts to bring the database up to date with the migrations
 // defined in this package.
 func Migrate(ctx context.Context, db *sqlx.DB) error {
