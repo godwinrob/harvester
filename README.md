@@ -4,7 +4,7 @@
 ### Running Locally
 
 Prerequisites:
-  * Go 1.22+
+  * Go 1.24+
   * Node.js 22+ (for UI development)
   * Docker & Docker Compose
   * [Tilt](https://tilt.dev/) (optional, for enhanced development experience)

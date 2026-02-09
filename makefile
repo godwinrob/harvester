@@ -1,7 +1,7 @@
 # ==============================================================================
 # Define dependencies
 
-GOLANG          := golang:1.22
+GOLANG          := golang:1.24
 ALPINE          := alpine:3.19
 KIND            := kindest/node:v1.30.0
 POSTGRES        := postgres:16.2
