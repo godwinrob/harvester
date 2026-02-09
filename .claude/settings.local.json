@@ -13,7 +13,8 @@
       "Bash(docker compose:*)",
       "Bash(go mod tidy:*)",
       "Bash(go mod download:*)",
-      "Bash(go version:*)"
+      "Bash(go version:*)",
+      "Bash(npm run type-check:*)"
     ]
   }
 }

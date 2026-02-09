@@ -37,11 +37,13 @@ services:
       - "127.0.0.1:3010:3010"
     env_file:
       - .env
-    deploy:
-      restart_policy:
-        condition: on-failure
-        delay: 5s
-        max_attempts: 3
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/v1/liveness"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
     develop:
       watch:
         - action: rebuild
@@ -56,17 +58,20 @@ services:
 
   ui:
     depends_on:
-      - harvester
+      harvester:
+        condition: service_healthy
     build:
       context: ../..
       dockerfile: ./infrastructure/docker/Dockerfile.ui
     ports:
       - "127.0.0.1:8080:80"
-    deploy:
-      restart_policy:
-        condition: on-failure
-        delay: 5s
-        max_attempts: 3
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:80/"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
     develop:
       watch:
         - action: rebuild
