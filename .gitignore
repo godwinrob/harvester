@@ -26,6 +26,9 @@ ui/.env.*.local
 # Infrastructure / Docker
 infrastructure/docker/.env
 
+# Claude Code
+.claude/
+
 # OS files
 .DS_Store
 Thumbs.db

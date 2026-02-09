@@ -50,7 +50,22 @@
 					"request": {
 						"method": "GET",
 						"header": [],
-						"url": "localhost:3000/v1/users"
+						"url": {
+							"raw": "localhost:3000/v1/users?page=1&row=20",
+							"host": ["localhost"],
+							"port": "3000",
+							"path": ["v1", "users"],
+							"query": [
+								{ "key": "page", "value": "1" },
+								{ "key": "row", "value": "20" },
+								{ "key": "orderBy", "value": "name", "disabled": true },
+								{ "key": "user_id", "value": "", "disabled": true },
+								{ "key": "name", "value": "", "disabled": true },
+								{ "key": "email", "value": "", "disabled": true },
+								{ "key": "start_created_date", "value": "", "disabled": true },
+								{ "key": "end_created_date", "value": "", "disabled": true }
+							]
+						}
 					},
 					"response": []
 				},
@@ -190,7 +205,20 @@
 					"request": {
 						"method": "GET",
 						"header": [],
-						"url": "localhost:3000/v1/galaxies"
+						"url": {
+							"raw": "localhost:3000/v1/galaxies?page=1&row=20",
+							"host": ["localhost"],
+							"port": "3000",
+							"path": ["v1", "galaxies"],
+							"query": [
+								{ "key": "page", "value": "1" },
+								{ "key": "row", "value": "20" },
+								{ "key": "orderBy", "value": "name", "disabled": true },
+								{ "key": "galaxy_id", "value": "", "disabled": true },
+								{ "key": "name", "value": "", "disabled": true },
+								{ "key": "date_created", "value": "", "disabled": true }
+							]
+						}
 					},
 					"response": []
 				},
@@ -287,7 +315,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"name\": \"test\",\r\n    \"galaxyID\": \"5d71e61b-fcc4-42df-a6ba-0cabc6c55384\",\r\n    \"addedUserID\": \"42abd928-58f7-4d6e-a411-1ffbcf82c341\",\r\n    \"resourceType\": \"big rock\",\r\n    \"oq\": 999\r\n}",
+							"raw": "{\r\n    \"name\": \"test\",\r\n    \"galaxyID\": \"5d71e61b-fcc4-42df-a6ba-0cabc6c55384\",\r\n    \"addedUserID\": \"42abd928-58f7-4d6e-a411-1ffbcf82c341\",\r\n    \"resourceType\": \"iron_kammris\",\r\n    \"oq\": 999\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -305,7 +333,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"items\": [\r\n        {\r\n            \"name\": \"Resource One\",\r\n            \"galaxyID\": \"5d71e61b-fcc4-42df-a6ba-0cabc6c55384\",\r\n            \"addedUserID\": \"42abd928-58f7-4d6e-a411-1ffbcf82c341\",\r\n            \"resourceType\": \"mineral\",\r\n            \"oq\": 500,\r\n            \"cr\": 100,\r\n            \"cd\": 200\r\n        },\r\n        {\r\n            \"name\": \"Resource Two\",\r\n            \"galaxyID\": \"5d71e61b-fcc4-42df-a6ba-0cabc6c55384\",\r\n            \"addedUserID\": \"42abd928-58f7-4d6e-a411-1ffbcf82c341\",\r\n            \"resourceType\": \"gas\",\r\n            \"oq\": 800,\r\n            \"sr\": 150\r\n        }\r\n    ]\r\n}",
+							"raw": "{\r\n    \"items\": [\r\n        {\r\n            \"name\": \"Resource One\",\r\n            \"galaxyID\": \"5d71e61b-fcc4-42df-a6ba-0cabc6c55384\",\r\n            \"addedUserID\": \"42abd928-58f7-4d6e-a411-1ffbcf82c341\",\r\n            \"resourceType\": \"iron_kammris\",\r\n            \"oq\": 500,\r\n            \"cr\": 100,\r\n            \"cd\": 200\r\n        },\r\n        {\r\n            \"name\": \"Resource Two\",\r\n            \"galaxyID\": \"5d71e61b-fcc4-42df-a6ba-0cabc6c55384\",\r\n            \"addedUserID\": \"42abd928-58f7-4d6e-a411-1ffbcf82c341\",\r\n            \"resourceType\": \"methane_petrochem_inert\",\r\n            \"oq\": 800,\r\n            \"sr\": 150\r\n        }\r\n    ]\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -321,7 +349,60 @@
 					"request": {
 						"method": "GET",
 						"header": [],
-						"url": "localhost:3000/v1/resources"
+						"url": {
+							"raw": "localhost:3000/v1/resources?page=1&row=20",
+							"host": ["localhost"],
+							"port": "3000",
+							"path": ["v1", "resources"],
+							"query": [
+								{ "key": "page", "value": "1" },
+								{ "key": "row", "value": "20" },
+								{ "key": "orderBy", "value": "oq", "disabled": true },
+								{ "key": "resource_id", "value": "", "disabled": true },
+								{ "key": "name", "value": "", "disabled": true },
+								{ "key": "resource_type", "value": "", "disabled": true },
+								{ "key": "resource_group", "value": "", "disabled": true },
+								{ "key": "added_at", "value": "", "disabled": true }
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Resources by Type",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "localhost:3000/v1/resources?resource_type=iron_kammris&page=1&row=20",
+							"host": ["localhost"],
+							"port": "3000",
+							"path": ["v1", "resources"],
+							"query": [
+								{ "key": "resource_type", "value": "iron_kammris" },
+								{ "key": "page", "value": "1" },
+								{ "key": "row", "value": "20" }
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Resources by Group",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "localhost:3000/v1/resources?resource_group=iron&page=1&row=20",
+							"host": ["localhost"],
+							"port": "3000",
+							"path": ["v1", "resources"],
+							"query": [
+								{ "key": "resource_group", "value": "iron" },
+								{ "key": "page", "value": "1" },
+								{ "key": "row", "value": "20" }
+							]
+						}
 					},
 					"response": []
 				},
@@ -403,6 +484,182 @@
 							}
 						},
 						"url": "localhost:3000/v1/resources/bulk"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "resource-types",
+			"item": [
+				{
+					"name": "Get Resource Types",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "localhost:3000/v1/resource-types?page=1&row=20",
+							"host": ["localhost"],
+							"port": "3000",
+							"path": ["v1", "resource-types"],
+							"query": [
+								{ "key": "page", "value": "1" },
+								{ "key": "row", "value": "20" },
+								{ "key": "orderBy", "value": "resource_type_name", "disabled": true },
+								{ "key": "resourceType", "value": "", "disabled": true },
+								{ "key": "resourceTypeName", "value": "", "disabled": true },
+								{ "key": "resourceCategory", "value": "", "disabled": true },
+								{ "key": "resourceGroup", "value": "", "disabled": true },
+								{ "key": "enterable", "value": "true", "disabled": true },
+								{ "key": "containerType", "value": "", "disabled": true }
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Resource Types (Enterable Only)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "localhost:3000/v1/resource-types?enterable=true&rows=2000",
+							"host": ["localhost"],
+							"port": "3000",
+							"path": ["v1", "resource-types"],
+							"query": [
+								{ "key": "enterable", "value": "true" },
+								{ "key": "rows", "value": "2000" }
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Resource Types by Group",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "localhost:3000/v1/resource-types?resourceGroup=iron&page=1&row=50",
+							"host": ["localhost"],
+							"port": "3000",
+							"path": ["v1", "resource-types"],
+							"query": [
+								{ "key": "resourceGroup", "value": "iron" },
+								{ "key": "page", "value": "1" },
+								{ "key": "row", "value": "50" }
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Resource Type",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "localhost:3000/v1/resource-types/iron_kammris"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Resource Type",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"resourceType\": \"custom_type\",\r\n    \"resourceTypeName\": \"Custom Type\",\r\n    \"resourceCategory\": \"Custom\",\r\n    \"resourceGroup\": \"iron\",\r\n    \"enterable\": true,\r\n    \"maxTypes\": 1,\r\n    \"oqMin\": 1,\r\n    \"oqMax\": 1000\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "localhost:3000/v1/resource-types"
+					},
+					"response": []
+				},
+				{
+					"name": "Bulk Create Resource Types",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"items\": [\r\n        {\r\n            \"resourceType\": \"custom_type_1\",\r\n            \"resourceTypeName\": \"Custom Type One\",\r\n            \"resourceCategory\": \"Custom\",\r\n            \"resourceGroup\": \"iron\",\r\n            \"enterable\": true,\r\n            \"maxTypes\": 1\r\n        },\r\n        {\r\n            \"resourceType\": \"custom_type_2\",\r\n            \"resourceTypeName\": \"Custom Type Two\",\r\n            \"resourceCategory\": \"Custom\",\r\n            \"resourceGroup\": \"copper\",\r\n            \"enterable\": true,\r\n            \"maxTypes\": 1\r\n        }\r\n    ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "localhost:3000/v1/resource-types/bulk"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Resource Type",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"resourceTypeName\": \"Updated Type Name\",\r\n    \"enterable\": false\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "localhost:3000/v1/resource-types/custom_type"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Resource Type",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": "localhost:3000/v1/resource-types/custom_type"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "resource-groups",
+			"item": [
+				{
+					"name": "Get Resource Groups",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "localhost:3000/v1/resource-groups?page=1&row=50",
+							"host": ["localhost"],
+							"port": "3000",
+							"path": ["v1", "resource-groups"],
+							"query": [
+								{ "key": "page", "value": "1" },
+								{ "key": "row", "value": "50" },
+								{ "key": "orderBy", "value": "group_name", "disabled": true },
+								{ "key": "resourceGroup", "value": "", "disabled": true },
+								{ "key": "groupName", "value": "", "disabled": true },
+								{ "key": "groupLevel", "value": "", "disabled": true },
+								{ "key": "containerType", "value": "", "disabled": true }
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Resource Group",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "localhost:3000/v1/resource-groups/iron"
 					},
 					"response": []
 				}
