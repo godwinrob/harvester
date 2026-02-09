@@ -8,9 +8,11 @@ import (
 )
 
 var orderByFields = map[string]string{
-	galaxybus.OrderByID:      "galaxy_id",
-	galaxybus.OrderByName:    "name",
-	galaxybus.OrderByEnabled: "enabled",
+	galaxybus.OrderByID:          "galaxy_id",
+	galaxybus.OrderByName:        "galaxy_name",
+	galaxybus.OrderByOwnerUserID: "owner_user_id",
+	galaxybus.OrderByDateCreated: "date_created",
+	galaxybus.OrderByEnabled:     "enabled",
 }
 
 func orderByClause(orderBy order.By) (string, error) {

@@ -13,12 +13,14 @@ import (
 
 // QueryParams represents the set of possible query strings.
 type QueryParams struct {
-	Page        string
-	Rows        string
-	OrderBy     string
-	ID          string
-	Name        string
-	AddedAtDate string
+	Page         string
+	Rows         string
+	OrderBy      string
+	ID           string
+	Name         string
+	ResourceType  string
+	ResourceGroup string
+	AddedAtDate   string
 }
 
 // Resource represents information about an individual resource.
@@ -54,6 +56,11 @@ func (app Resource) Encode() ([]byte, string, error) {
 }
 
 func toAppResource(bus resourcebus.Resource) Resource {
+	// Handle nullable time fields - only format if not zero
+	var unavailableAt string
+	if !bus.UnavailableAt.IsZero() {
+		unavailableAt = bus.UnavailableAt.Format(time.RFC3339)
+	}
 
 	return Resource{
 		ID:                bus.ID.String(),
@@ -63,7 +70,7 @@ func toAppResource(bus resourcebus.Resource) Resource {
 		UpdatedAtDate:     bus.UpdatedAtDate.Format(time.RFC3339),
 		AddedUserID:       bus.AddedUserID.String(),
 		ResourceType:      bus.ResourceType,
-		UnavailableAt:     bus.UnavailableAt.Format(time.RFC3339),
+		UnavailableAt:     unavailableAt,
 		UnavailableUserID: bus.UnavailableUserID.String(),
 		Verified:          bus.Verified,
 		VerifiedUserID:    bus.VerifiedUserID.String(),

@@ -92,6 +92,8 @@ export interface ResourceListParams {
     direction: 'ASC' | 'DESC'
   }
   name?: string
+  resourceType?: string
+  resourceGroup?: string
   galaxyID?: string
 }
 
@@ -111,3 +113,7 @@ export const RESOURCE_STATS = [
 ] as const
 
 export type StatKey = typeof RESOURCE_STATS[number]['key']
+
+// Resource types are now fetched from the /v1/resource-types API endpoint.
+// See ui/src/features/resource-types/ for the ResourceType interface and API client.
+// The resource_types table contains 1400+ types with stat ranges, categories, and groups.

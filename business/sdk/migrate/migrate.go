@@ -33,6 +33,9 @@ func Reset(ctx context.Context, db *sqlx.DB) error {
 
 	// Drop tables in reverse dependency order
 	queries := []string{
+		"DROP TABLE IF EXISTS resource_type_groups CASCADE",
+		"DROP TABLE IF EXISTS resource_types CASCADE",
+		"DROP TABLE IF EXISTS resource_groups CASCADE",
 		"DROP TABLE IF EXISTS resources CASCADE",
 		"DROP TABLE IF EXISTS galaxies CASCADE",
 		"DROP TABLE IF EXISTS users CASCADE",

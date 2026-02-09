@@ -3,6 +3,7 @@ kind: Kustomization
 resources:
   - ../../base/harvester/
 patches:
+  - path: ./dev-harvester-patch-configmap.yaml
   - path: ./dev-harvester-patch-deploy.yaml
   - path: ./dev-harvester-patch-service.yaml
 images:
@@ -12,3 +13,8 @@ images:
   - name: admin-image
     newName: localhost/harvester/admin
     newTag: 0.0.1
+secretGenerator:
+  - name: harvester-db-secret
+    literals:
+      - HARVESTER_DB_USER=postgres
+      - HARVESTER_DB_PASSWORD=postgres

@@ -40,7 +40,7 @@ func Migrate() error {
 	}
 
 	// Validate configuration before attempting to connect
-	if err := validateConfig(cfg); err != nil {
+	if err := sqldb.ValidateConfig(cfg); err != nil {
 		return err
 	}
 
@@ -56,7 +56,7 @@ func Migrate() error {
 		}
 	}(db)
 
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
 	defer cancel()
 
 	// Reset database to avoid checksum errors in development
@@ -75,11 +75,33 @@ func Migrate() error {
 
 	fmt.Println("migrations complete")
 
+	// Seed resource type reference data first (groups, types, type-group mappings)
+	// Must run before seed.sql because resources.resource_type has FK to resource_types
+	slog.Info("seeding", "status", "inserting resource type reference data")
+	if err := migrate.SeedAllResourceTypeData(ctx, db); err != nil {
+		return fmt.Errorf("seed resource type data: %w", err)
+	}
+	fmt.Println("resource type seed data complete")
+
 	if err := migrate.Seed(ctx, db); err != nil {
 		return fmt.Errorf("seed database: %w", err)
 	}
 
 	fmt.Println("seed data complete")
+
+	// Optionally seed random resources for development/testing
+	seedResources := getEnv("HARVESTER_SEED_RESOURCES", "false") == "true"
+	if seedResources {
+		resourceCount := 1000 // Default to 1000 resources
+		slog.Info("seeding", "status", "generating random resources", "count", resourceCount)
+
+		if err := migrate.SeedRandomResources(ctx, db, resourceCount); err != nil {
+			return fmt.Errorf("seed random resources: %w", err)
+		}
+
+		fmt.Printf("seeded %d random resources\n", resourceCount)
+	}
+
 	return nil
 }
 
@@ -88,49 +110,4 @@ func getEnv(key, defaultValue string) string {
 		return value
 	}
 	return defaultValue
-}
-
-// validateConfig checks if the database configuration contains placeholder values
-// and fails fast with a clear error message instead of attempting to connect.
-func validateConfig(cfg sqldb.Config) error {
-	// Check for common placeholder patterns
-	placeholders := map[string]string{
-		"Host":     cfg.Host,
-		"User":     cfg.User,
-		"Password": cfg.Password,
-		"Name":     cfg.Name,
-	}
-
-	for field, value := range placeholders {
-		// Check for obvious placeholder patterns
-		if value == "" ||
-			value == "your_db_user" ||
-			value == "your_db_name" ||
-			value == "your_secure_password_here" ||
-			value == "localhost_or_postgres_service" ||
-			value == "CHANGE_ME" ||
-			value == "TODO" {
-			return fmt.Errorf(`
-┌─────────────────────────────────────────────────────────────────┐
-│ DATABASE CONFIGURATION ERROR (Migration)                        │
-├─────────────────────────────────────────────────────────────────┤
-│ The database %s is set to a placeholder value: "%s"
-│                                                                 │
-│ Please configure the database connection by setting:            │
-│   HARVESTER_DB_HOST     - Database host (e.g., postgres)        │
-│   HARVESTER_DB_USER     - Database username                     │
-│   HARVESTER_DB_PASSWORD - Database password                     │
-│   HARVESTER_DB_NAME     - Database name                         │
-│                                                                 │
-│ For local development with Docker Compose:                      │
-│   These should be set in infrastructure/docker/.env             │
-│                                                                 │
-│ For Kubernetes:                                                 │
-│   Update the Secret in infrastructure/k8s/base/harvester/       │
-└─────────────────────────────────────────────────────────────────┘
-`, field, value)
-		}
-	}
-
-	return nil
 }

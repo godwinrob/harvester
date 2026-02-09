@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: harvester-config
+  namespace: harvester-system
+data:
+  HARVESTER_DB_RESET: "true"
+  HARVESTER_SEED_RESOURCES: "true"

@@ -38,11 +38,19 @@ type Transactor interface {
 // WithTransaction executes a function within a database transaction.
 // If the function returns an error, the transaction is rolled back.
 // If the function succeeds, the transaction is committed.
-func WithTransaction(db Transactor, fn func(tx *sqlx.Tx) error) error {
+// If the function panics, the transaction is rolled back before re-panicking.
+func WithTransaction(db Transactor, fn func(tx *sqlx.Tx) error) (err error) {
 	tx, err := db.Beginx()
 	if err != nil {
 		return fmt.Errorf("begin transaction: %w", err)
 	}
+
+	defer func() {
+		if p := recover(); p != nil {
+			_ = tx.Rollback()
+			panic(p)
+		}
+	}()
 
 	if err := fn(tx); err != nil {
 		if rbErr := tx.Rollback(); rbErr != nil {

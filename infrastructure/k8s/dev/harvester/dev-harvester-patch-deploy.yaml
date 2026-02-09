@@ -20,6 +20,8 @@ spec:
           envFrom:
             - configMapRef:
                 name: harvester-config
+            - secretRef:
+                name: harvester-db-secret
           env:
             - name: HARVESTER_DB_HOST
               value: "localhost"
@@ -34,6 +36,8 @@ spec:
           envFrom:
             - configMapRef:
                 name: harvester-config
+            - secretRef:
+                name: harvester-db-secret
           env:
             - name: HARVESTER_DB_HOST
               value: "localhost"

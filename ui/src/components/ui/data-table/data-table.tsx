@@ -84,7 +84,7 @@ export function DataTable<TData, TValue>({
 
   // Determine if pagination/sorting are controlled externally (manual mode)
   const isManualPagination = pageCount !== undefined
-  const isManualSorting = externalSorting !== undefined || onSortingChange !== undefined
+  const isManualSorting = externalSorting !== undefined
 
   const table = useReactTable({
     data,
@@ -110,10 +110,13 @@ export function DataTable<TData, TValue>({
     onSortingChange: (updater) => {
       const newSorting =
         typeof updater === 'function' ? updater(sorting) : updater
-      if (onSortingChange) {
-        onSortingChange(newSorting)
+      if (externalSorting !== undefined) {
+        // Fully controlled mode - only call the callback
+        onSortingChange?.(newSorting)
       } else {
+        // Internal mode - update internal state and optionally call callback
         setInternalSorting(newSorting)
+        onSortingChange?.(newSorting)
       }
     },
     onColumnFiltersChange: setColumnFilters,

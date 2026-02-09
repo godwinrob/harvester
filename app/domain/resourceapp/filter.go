@@ -25,6 +25,14 @@ func parseFilter(qp QueryParams) (resourcebus.QueryFilter, error) {
 		filter.ResourceName = &name
 	}
 
+	if qp.ResourceType != "" {
+		filter.ResourceType = &qp.ResourceType
+	}
+
+	if qp.ResourceGroup != "" {
+		filter.ResourceGroup = &qp.ResourceGroup
+	}
+
 	//if qp.StartCreatedDate != "" {
 	//	t, err := time.Parse(time.RFC3339, qp.StartCreatedDate)
 	//	if err != nil {

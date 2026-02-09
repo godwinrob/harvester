@@ -15,6 +15,8 @@ export const resourcesApi = {
     const queryParams: Record<string, string | number | undefined> = {
       ...buildPaginationParams(params),
       name: params.name,
+      resource_type: params.resourceType,
+      resource_group: params.resourceGroup,
       galaxyID: params.galaxyID,
     }
     return api.get<PaginatedResponse<Resource>>('/resources', queryParams)

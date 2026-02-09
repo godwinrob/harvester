@@ -73,13 +73,11 @@ export class ApiError extends Error {
   getBulkErrors(): Map<number, { message: string; fields?: Record<string, string> }> {
     const map = new Map<number, { message: string; fields?: Record<string, string> }>()
     if (this.errors) {
-      this.errors.forEach(({ index, error, fields }) => {
+      this.errors.forEach(({ index, error, field }) => {
         map.set(index, {
           message: error,
-          fields: fields
-            ? Object.fromEntries(
-                Object.entries(fields).map(([f, m]) => [f, m[0]])
-              )
+          fields: field
+            ? { [field]: error }
             : undefined,
         })
       })

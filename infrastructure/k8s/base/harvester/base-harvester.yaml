@@ -17,15 +17,11 @@ data:
 
 ---
 
-apiVersion: v1
-kind: Secret
-metadata:
-  name: harvester-db-secret
-  namespace: harvester-system
-type: Opaque
-stringData:
-  HARVESTER_DB_USER: "postgres"
-  HARVESTER_DB_PASSWORD: "postgres"
+# NOTE: The harvester-db-secret Secret must be created via:
+# - Kustomize overlays (dev/prod environments)
+# - External secret management (e.g., sealed-secrets, external-secrets-operator)
+# - Manual creation out-of-band
+# It should contain: HARVESTER_DB_USER and HARVESTER_DB_PASSWORD
 
 ---
 

@@ -98,7 +98,17 @@ func run(ctx context.Context, log *logger.Logger) error {
 	// -------------------------------------------------------------------------
 	// Validate Configuration
 
-	if err := validateConfig(cfg.DB); err != nil {
+	dbCfg := sqldb.Config{
+		User:         cfg.DB.User,
+		Password:     cfg.DB.Password,
+		Host:         cfg.DB.Host,
+		Name:         cfg.DB.Name,
+		MaxIdleConns: cfg.DB.MaxIdleConns,
+		MaxOpenConns: cfg.DB.MaxOpenConns,
+		DisableTLS:   cfg.DB.DisableTLS,
+	}
+
+	if err := sqldb.ValidateConfig(dbCfg); err != nil {
 		return fmt.Errorf("configuration error: %w", err)
 	}
 
@@ -117,15 +127,7 @@ func run(ctx context.Context, log *logger.Logger) error {
 
 	time.Sleep(10 * time.Second)
 
-	db, err := sqldb.Open(sqldb.Config{
-		User:         cfg.DB.User,
-		Password:     cfg.DB.Password,
-		Host:         cfg.DB.Host,
-		Name:         cfg.DB.Name,
-		MaxIdleConns: cfg.DB.MaxIdleConns,
-		MaxOpenConns: cfg.DB.MaxOpenConns,
-		DisableTLS:   cfg.DB.DisableTLS,
-	})
+	db, err := sqldb.Open(dbCfg)
 	if err != nil {
 		return fmt.Errorf("connecting to db: %w", err)
 	}
@@ -177,59 +179,6 @@ func run(ctx context.Context, log *logger.Logger) error {
 		if err := api.Shutdown(ctx); err != nil {
 			api.Close()
 			return fmt.Errorf("could not stop server gracefully: %w", err)
-		}
-	}
-
-	return nil
-}
-
-// validateConfig checks if the database configuration contains placeholder values
-// and fails fast with a clear error message instead of attempting to connect.
-func validateConfig(dbCfg struct {
-	User         string `conf:"default:postgres"`
-	Password     string `conf:"default:postgres"`
-	Host         string `conf:"default:postgres"`
-	Name         string `conf:"default:postgres"`
-	MaxIdleConns int    `conf:"default:0"`
-	MaxOpenConns int    `conf:"default:0"`
-	DisableTLS   bool   `conf:"default:true"`
-}) error {
-	// Check for common placeholder patterns
-	placeholders := map[string]string{
-		"Host":     dbCfg.Host,
-		"User":     dbCfg.User,
-		"Password": dbCfg.Password,
-		"Name":     dbCfg.Name,
-	}
-
-	for field, value := range placeholders {
-		// Check for obvious placeholder patterns
-		if value == "" ||
-			value == "your_db_user" ||
-			value == "your_db_name" ||
-			value == "your_secure_password_here" ||
-			value == "localhost_or_postgres_service" ||
-			value == "CHANGE_ME" ||
-			value == "TODO" {
-			return fmt.Errorf(`
-┌─────────────────────────────────────────────────────────────────┐
-│ DATABASE CONFIGURATION ERROR                                    │
-├─────────────────────────────────────────────────────────────────┤
-│ The database %s is set to a placeholder value: "%s"
-│                                                                 │
-│ Please configure the database connection by setting:            │
-│   HARVESTER_DB_HOST     - Database host (e.g., postgres)        │
-│   HARVESTER_DB_USER     - Database username                     │
-│   HARVESTER_DB_PASSWORD - Database password                     │
-│   HARVESTER_DB_NAME     - Database name                         │
-│                                                                 │
-│ For local development with Docker Compose:                      │
-│   These should be set in infrastructure/docker/.env             │
-│                                                                 │
-│ For Kubernetes:                                                 │
-│   Update the Secret in infrastructure/k8s/base/harvester/       │
-└─────────────────────────────────────────────────────────────────┘
-`, field, value)
 		}
 	}
 
